@@ -1,5 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Client rig for R15 characters. Pose and sway go through PoseSolverR15, and the gun, hands and
+-- magazine are driven by R15/WeaponRig, so Compose mostly just feeds the pose in. It's used
+-- for the local player and for everyone else we can see.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponSystem = ReplicatedStorage:WaitForChild("WeaponSystem")
@@ -45,6 +48,7 @@ local R15: ClientTypes.ClientRig = {
 	AlignTorso = "UpperTorso",
 	ResetOnToolChange = true,
 	ViewConfig = function(config: Types.WeaponConfig): Types.WeaponConfig
+		-- shallow clone so the shared config isn't changed, only a top level field is replaced
 		local view = table.clone(config)
 		view.FirstPersonFOV = Settings.R15.FirstPersonFOV
 		return view
@@ -73,7 +77,8 @@ local R15: ClientTypes.ClientRig = {
 	end,
 	LocalFrame = function(_equipped: ClientTypes.Equipped, _isFirstPerson: boolean, _deltaTime: number) end,
 	Unequip = function(_equipped: ClientTypes.Equipped) end,
-	-- ReloadUsesAnimation lets the anim drive the arms, otherwise ReloadMotion does it
+	-- ReloadUsesAnimation lets the anim drive the arms, otherwise ReloadMotion does it. The
+	-- local player has their own track handle, for others it's found by id once it's playing
 	Reload = function(character: Model, tool: Tool, config: Types.WeaponConfig, options: ClientTypes.ReloadOptions)
 		local usesAnimation = config.Handling.ReloadUsesAnimation
 		if options.isLocal then
