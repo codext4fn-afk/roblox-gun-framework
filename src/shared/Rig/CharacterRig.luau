@@ -2,6 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 local Types = require(script.Parent.Parent.Types)
 
+-- Rig type and liveness checks on a character model. The server uses IsAlive to gate firing
+-- and reloading, so it's based on Humanoid.Health and not on anything the client says.
+
 local CharacterRig = {}
 
 function CharacterRig.GetHumanoid(character: Instance?): Humanoid?
