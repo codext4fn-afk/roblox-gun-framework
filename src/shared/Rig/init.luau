@@ -1,5 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Entry point for rig detection. Picks the pose solver that matches the character's rig, or
+-- nil when there's no Humanoid. Server (PoseReplicator) and client both go through this.
 local CharacterRig = require(script.CharacterRig)
 local PoseSolverR15 = require(script.PoseSolverR15)
 local PoseSolverR6 = require(script.PoseSolverR6)
