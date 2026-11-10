@@ -3,6 +3,13 @@
 
 -- Generates per weapon anim drafts into AnimationDrafts, run Build("AK") from the command bar
 -- Studio only, publish them and put the ids in the config
+--
+-- It starts from the shared animations (Settings.SharedAnimations, or an existing shared draft)
+-- and adapts them to one weapon: the R6 reload moves the left arm to the gun's own mag, bolt and
+-- support points, and the R15 body animations are scaled by how heavy the gun kicks. The weapon
+-- has to be a Tool with a Handle in StarterPack and have a config. WeaponAnimations is what
+-- picks the drafts up in Studio, so a draft only matters until its id is published.
+-- TODO(me): explain the tuning numbers (BELOW_WELL, the 0.04/0.06/0.08/0.22 key offsets, 0.85 hip blend, 1.2 bolt pull)
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local KeyframeSequenceProvider = game:GetService("KeyframeSequenceProvider")
@@ -40,7 +47,8 @@ local R6_RIGHT_GRIP = CFrame.new(0, -1, 0) * CFrame.Angles(math.rad(-90), 0, 0)
 local R6_PALM = Vector3.new(0, -1, 0)
 local MAGAZINE_HOLD = Vector3.new(0, -0.15, 0)
 local BELOW_WELL = 0.45
-local REFERENCE_ARM_KICK = 0.6 -- Defaults.ArmKick, heavier guns move the body more
+-- Defaults.ArmKick, heavier guns move the body more, so R15 clips are scaled by ArmKick over this
+local REFERENCE_ARM_KICK = 0.6
 local BODY_WEIGHT_MIN, BODY_WEIGHT_MAX = 0.7, 1.8
 local IDENTITY = CFrame.new()
 local R15_BODY_ANIMATIONS: { Types.AnimationName } = { "Hold", "Aim", "Reload" }
@@ -110,6 +118,8 @@ local function sortedKeyframes(sequence: KeyframeSequence): { Keyframe }
 	return keyframes
 end
 
+-- Looks up the last keyframe at or before `time` that actually sets this joint. There's no
+-- interpolation, it's a step lookup, which is enough for reading rest and end poses
 local function poseAt(sequence: KeyframeSequence, jointName: string, time: number): CFrame
 	local found = CFrame.identity
 	for _, keyframe in sortedKeyframes(sequence) do
@@ -139,11 +149,13 @@ end
 
 local function getDraftFolder(rig: Types.RigName, weaponId: string): Instance
 	local folder = getOrCreateFolder(getDraftRoot(rig), weaponId)
-	-- wipes old drafts, publish first if you edited them
+	-- wipes old drafts, publish first if you edited them, because Build replaces them for good
 	folder:ClearAllChildren()
 	return folder
 end
 
+-- Works out where the handle ends up on an R6 rig for a given right arm pose, so the left
+-- arm targets can be put in handle space. GripR6 overrides Grip when the R6 hold is different
 local function handleFor(tool: Tool, rightArmPose: CFrame): CFrame
 	local arm = RIGHT_SHOULDER.C0 * rightArmPose * RIGHT_SHOULDER.C1:Inverse()
 	local gripR6 = tool:GetAttribute("GripR6")
@@ -196,6 +208,8 @@ local function supportPoint(tool: Tool): Vector3
 	return eye:Lerp(muzzle, 0.38) - Vector3.new(0, 0.16, 0)
 end
 
+-- Key times are fractions of the reload, taken from the Magazine config, the same fractions
+-- the runtime reload uses. Needs a mag with a GunJoint
 local function buildR6Reload(tool: Tool, config: Types.WeaponConfig, shared: KeyframeSequence): KeyframeSequence
 	local magazine = config.Magazine
 	local duration = config.ReloadTime
@@ -284,6 +298,8 @@ local function buildR6BoltFeed(tool: Tool, config: Types.WeaponConfig, shared: K
 	return sequence
 end
 
+-- Copies a shared clip and scales every pose toward identity by `amount`, and optionally
+-- stretches it to `duration` (used so the reload clip matches ReloadTime)
 local function rescale(shared: KeyframeSequence, name: string, amount: number, duration: number?): KeyframeSequence
 	local keyframes = sortedKeyframes(shared)
 	local length = keyframes[#keyframes].Time
@@ -313,6 +329,8 @@ function WeaponAnimationBuilder.GetWeapon(weaponId: string): (Tool, Types.Weapon
 	return tool, config
 end
 
+-- Only the reload is generated for R6 (BoltFeed guns get their own version), Hold and Aim
+-- stay the shared ones
 function WeaponAnimationBuilder.BuildR6(weaponId: string): Instance
 	local tool, config = WeaponAnimationBuilder.GetWeapon(weaponId)
 	local folder = getDraftFolder("R6", weaponId)
