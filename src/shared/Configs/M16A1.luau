@@ -1,5 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Overrides only, everything not listed comes from Defaults. WeaponRegistry loads this by
+-- module name, so the file name is the weapon Id (and what a Tool's name has to match).
 local Types = require(script.Parent.Parent.Types)
 
 local config: Types.WeaponOverrides = {

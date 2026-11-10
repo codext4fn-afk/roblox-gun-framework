@@ -1,5 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Overrides only, everything not listed comes from Defaults. WeaponRegistry loads this by
+-- module name, so the file name is the weapon Id (and what a Tool's name has to match).
 local Types = require(script.Parent.Parent.Types)
 
 local config: Types.WeaponOverrides = {
@@ -15,7 +17,8 @@ local config: Types.WeaponOverrides = {
 	FirstPersonFOV = 60,
 	ScopeFOV = 12,
 	ScopeOverlay = true,
-	AimSensitivity = 0.3, -- on top of the fov matching
+	-- on top of the fov matching, so it stays slow at the narrow ScopeFOV
+	AimSensitivity = 0.3,
 	EyeOffset = Vector3.new(0, 0, 0.45), -- eye relief behind the scope
 	ShowCrosshair = false,
 	FirstPersonPushR6 = 1.1, -- long barrel clips the camera in R6 first person without this
