@@ -1,6 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
+-- Small number and angle helpers shared by the server and client, nothing in here touches
+-- instances. Angles are radians everywhere.
+
 local AngleMath = {}
 
 function AngleMath.Lerp(a: number, b: number, t: number): number
@@ -26,7 +29,8 @@ function AngleMath.Smoothstep(t: number): number
 	return t * t * (3 - 2 * t)
 end
 
--- framerate independent lerp alpha
+-- framerate independent lerp alpha: apply it as lerp(current, target, ExpBlend(dt, speed))
+-- each frame and it eases the same at any framerate
 function AngleMath.ExpBlend(deltaTime: number, speed: number): number
 	return 1 - math.exp(-deltaTime * speed)
 end
