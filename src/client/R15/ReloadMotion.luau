@@ -3,6 +3,14 @@
 
 -- Procedural R15 reload, keyframes the support hand and the mag and bolt follow it
 -- Keys get rebuilt every frame from the live handle so the hand follows the gun
+--
+-- One instance per running reload, owned by WeaponRig (StartReload creates it, Advance and
+-- Evaluate run every frame, Finish cleans up). It's used when the gun's config has
+-- ReloadUsesAnimation off, otherwise Mechanics and the reload animation do the job. Time is
+-- `progress` from 0 to 1 over config.ReloadTime, and the Magazine config fractions (Out, Drop,
+-- Grab, In) are positions on that same scale. Everything it touches (mag joint, bolt joint,
+-- transparency, the prop) has to be put back by Finish, a reload can be replaced or aborted.
+-- TODO(me): explain the geometry constants (GRIP_ALONG, PULL_CLEAR, LINE_UP, ROCK_ANGLE, the 0.12 bolt palm offset)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -103,7 +111,10 @@ local RACK_REACH, RACK_PULL, RACK_RELEASE = 0.07, 0.06, 0.03
 
 local smoothstep = AngleMath.Smoothstep
 
--- uses the mag joint if there is one, otherwise a MagazineWell attachment (prop guns)
+-- Uses the mag joint if there is one, otherwise a MagazineWell attachment (prop guns).
+-- `down` is the direction the mag slides out, `length` how long it is along that direction.
+-- The authored MagazineLength is multiplied by the R15Scale attribute that WeaponScaler puts
+-- on the tool, since the gun was shrunk on the server and the number was written for full size
 local function wellGeometry(tool: Tool, part: BasePart?, joint: Motor6D?): (CFrame?, Vector3, number)
 	local forward = WeaponAxes.ForwardAxis(tool)
 	if joint and part then
@@ -128,6 +139,8 @@ local function wellGeometry(tool: Tool, part: BasePart?, joint: Motor6D?): (CFra
 	return nil, -Vector3.yAxis, 0
 end
 
+-- Guns with no mag part get a stand-in prop cloned from WeaponSystem/Props, invisible until
+-- the hand grabs it. Anchored and non-colliding so it's only a visual
 local function makeProp(name: string): BasePart?
 	local props = WeaponSystem:FindFirstChild("Props")
 	local template = props and name ~= "" and props:FindFirstChild(name)
@@ -200,6 +213,9 @@ function ReloadMotion.new(tool: Tool, config: Types.WeaponConfig, options: Optio
 	return self
 end
 
+-- Everything after the mag goes in is laid out one after another (seat, optional tap, optional
+-- rack, return). BoltFeed does its own bolt work earlier so it skips tap and rack here. The
+-- return is capped under 1 so the hand is back on the gun before the reload ends
 function ReloadMotion._buildTimeline(self: ReloadMotion)
 	local t = self.times
 	local line: Timeline = { seatAt = t.In + SEAT, returnAt = 0 }
@@ -219,7 +235,8 @@ function ReloadMotion._buildTimeline(self: ReloadMotion)
 	self.line = line
 end
 
--- once, on the first frame past `at`
+-- Once, on the first frame past `at`. Progress moves by frame, so a step can't be hit exactly
+-- and this is what makes sure it still happens, and only one time
 function ReloadMotion._fire(self: ReloadMotion, name: string, at: number?, action: () -> ())
 	if at and self.progress >= at and not self.fired[name] then
 		self.fired[name] = true
@@ -240,6 +257,7 @@ function ReloadMotion._setHidden(self: ReloadMotion, part: BasePart?, hidden: bo
 	end
 end
 
+-- Returns false when the reload is over, and WeaponRig then calls Finish
 function ReloadMotion.Advance(self: ReloadMotion, deltaTime: number): boolean
 	self.progress += deltaTime / self.duration
 	local t, line, tool = self.times, self.line, self.tool
@@ -381,7 +399,8 @@ function ReloadMotion.Evaluate(self: ReloadMotion, handle: CFrame, supportPalm: 
 		end
 	end
 	local palmToMagazine = self.palmToMagazine
-	-- mag follows the palm until it's seated
+	-- mag follows the palm until it's seated. Both keys have to be holding, so it doesn't snap
+	-- to a hand that's only passing by
 	local held = if holding and progress < self.line.seatAt and palmToMagazine then palm * palmToMagazine else nil
 	local joint, seated = self.joint, self.seated
 	if joint and seated then
@@ -398,6 +417,7 @@ function ReloadMotion.Evaluate(self: ReloadMotion, handle: CFrame, supportPalm: 
 	return palm
 end
 
+-- Safe to call at any time and puts everything back (joints, bolt, transparency, prop)
 function ReloadMotion.Finish(self: ReloadMotion)
 	local joint, seated = self.joint, self.seated
 	if joint and seated then
