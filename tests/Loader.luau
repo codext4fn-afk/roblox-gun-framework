@@ -2,6 +2,12 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 -- Loads src modules under Lune by faking script and require
+--
+-- The modules expect Roblox's `script` and `require(script.Parent.X)`, so each one gets a
+-- fake `script` that just tracks a file path, and `require` loads whatever path it points to.
+-- Only the math globals in GLOBALS exist, there's no game, workspace or Instance, so a module
+-- that calls game:GetService can't be loaded here. That's why only the pure modules (validators,
+-- limiters, math) have specs.
 
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
@@ -61,12 +67,13 @@ function Loader.Require(path: string): any
 	local environment: { [string]: any } = table.clone(GLOBALS)
 	environment.script = makeScript(path)
 	environment.require = moduleRequire
+	-- fresh environment per module so one module's globals can't leak into another
 	local chunk = luau.load(fs.readFile(file), {
 		debugName = file,
 		environment = environment :: any,
 	})
 	local result = chunk()
-	-- Types.luau returns nil
+	-- Types.luau returns nil, and false is stored so the cache check above still works for it
 	cache[file] = if result == nil then false else result
 	return result
 end
