@@ -3,6 +3,10 @@
 
 -- Client to server: Fire, Reload, SetAiming, AimPitch
 -- Server to client: ReplicateShot, ReplicateReload
+--
+-- This only collects the RemoteEvents that live under this module so both sides get the
+-- same typed handles. It has no logic. The four client to server ones carry untrusted
+-- input, WeaponService is the only listener and has to validate every argument.
 
 -- fail loudly at startup if one is missing
 local function get(name: string): RemoteEvent
