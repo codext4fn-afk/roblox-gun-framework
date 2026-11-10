@@ -1,6 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
+-- Spread math for the client's shot pattern and crosshair. The random source is passed in
+-- as nextNumber, this module never calls math.random itself. The server doesn't use any
+-- of it to re-roll shots, ShotValidator only checks that pellets are inside the cone.
+
 local Spread = {}
 
 export type NextNumber = () -> number
@@ -14,7 +18,8 @@ function Spread.CrosshairGap(spreadDegrees: number): number
 	return 6 + spreadDegrees * 5
 end
 
--- sqrt so shots spread evenly over the cone instead of bunching in the middle
+-- sqrt so shots spread evenly over the cone instead of bunching in the middle. A plain
+-- random angle would crowd the pellets near the center of the disc
 function Spread.SampleCone(direction: Vector3, degrees: number, nextNumber: NextNumber): Vector3
 	local angle = math.rad(degrees) * math.sqrt(nextNumber())
 	local roll = nextNumber() * math.pi * 2
