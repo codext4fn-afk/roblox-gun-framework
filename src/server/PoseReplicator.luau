@@ -1,7 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Poses armed characters on the server from the AimPitch and Aiming attributes
+-- Poses armed characters on the server from the AimPitch and Aiming attributes.
+-- It owns the per-character pose state and nothing else. It trusts that AimPitch was
+-- already clamped by WeaponService.onAimPitch and that Aiming is only written by
+-- WeaponService, but it still type checks AimPitch because attributes are loose.
+-- WeaponService calls Start and Stop as tools are equipped and unequipped.
+-- TODO(me): explain why the server poses characters at all when the client has AimPose, I can't tell from the code
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -23,10 +28,12 @@ local posed: { [Model]: Posed } = {}
 local connection: RBXScriptConnection? = nil
 
 local function step(deltaTime: number)
-	-- pitch only comes in ~15 times a second so smooth it out
+	-- pitch only arrives in steps (the limiter caps it at 30 a second) so I ease toward it.
+	-- ExpBlend takes deltaTime so the smoothing feels the same at any server frame rate
 	local blend = AngleMath.ExpBlend(deltaTime, Settings.Server.PoseSmoothing)
 	for character, entry in posed do
-		-- got removed without Stop being called
+		-- backup for a character that was removed without Stop being called, so this table
+		-- can't hold dead models forever
 		if not character.Parent then
 			posed[character] = nil
 			continue
@@ -41,6 +48,7 @@ local function step(deltaTime: number)
 	end
 end
 
+-- Called on every tool child change, so it has to be safe to call twice
 function PoseReplicator.Start(character: Model)
 	if posed[character] then
 		return
@@ -51,6 +59,8 @@ function PoseReplicator.Start(character: Model)
 	end
 end
 
+-- Clear hands the joints back to the animations, otherwise an unequipped character would
+-- stay stuck in the last aim pose
 function PoseReplicator.Stop(character: Model)
 	local entry = posed[character]
 	if entry then
