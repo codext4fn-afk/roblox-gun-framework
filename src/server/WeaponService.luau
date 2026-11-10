@@ -35,7 +35,10 @@ local ServerSettings = Settings.Server
 
 type ToolState = {
 	clock: ShotClock.ShotClock,
-	-- TODO(me): explain. Only onReload bumps this and Reloading blocks a second reload, so I can't see when a token goes stale
+	-- Bumped on every reload and checked again when the reload timer fires, so a timer that
+	-- belongs to an older reload does nothing. Right now only onReload bumps it, and the
+	-- Reloading flag already blocks a second reload, so it never differs in practice. It's
+	-- here so a future cancel (unequip, death) only has to bump it to stop the refill.
 	reloadToken: number,
 }
 
