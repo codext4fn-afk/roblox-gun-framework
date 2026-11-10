@@ -1,5 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Loads the Hold, Aim, Fire and Reload animations for a weapon on a humanoid's Animator.
+-- WeaponAnimations decides which asset id each one is, this module only turns ids into
+-- tracks, sets priorities and caches them. A missing animation is just absent from the table,
+-- so callers must nil check every track.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponSystem = ReplicatedStorage:WaitForChild("WeaponSystem")
@@ -10,7 +14,8 @@ local AnimationTracks = {}
 
 export type Tracks = { [string]: AnimationTrack }
 
--- each one overrides the one above it
+-- each one overrides the one above it, so Reload plays over a held aim pose and Fire plays
+-- over Hold or Aim
 local PRIORITIES: { [string]: Enum.AnimationPriority } = {
 	Hold = Enum.AnimationPriority.Action,
 	Aim = Enum.AnimationPriority.Action2,
@@ -62,7 +67,9 @@ function AnimationTracks.Load(humanoid: Humanoid, config: Types.WeaponConfig, ri
 	return tracks
 end
 
--- other players' anims replicate through their Animator and we have no handle, so search by id
+-- Other players' anims replicate through their Animator and we have no handle on the track,
+-- so search the playing ones by id. The track may not be playing yet when this is called, so
+-- it polls for up to TRACK_WAIT seconds instead of checking once
 function AnimationTracks.WaitForPlaying(
 	character: Model,
 	config: Types.WeaponConfig,
