@@ -1,6 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
+-- Tiny assertion helper for the specs, expect(value).toBe(...) style. Failures raise an error
+-- and tests/run.luau catches it per test, so one failure doesn't stop the rest. toContain
+-- does a plain substring match when both sides are strings, which is how the validator specs
+-- match an error path like "Magazine.Drop" inside a full error message.
+
 export type Expectation = {
 	toBe: (expected: any) -> (),
 	toBeNear: (expected: number, tolerance: number?) -> (),
@@ -14,7 +19,8 @@ export type Expectation = {
 local DEFAULT_TOLERANCE = 1e-6
 
 local function fail(message: string)
-	error(message, 3) -- point at the spec line
+	-- level 3 so the error points at the line in the spec, not at this helper
+	error(message, 3)
 end
 
 local function expect(actual: any): Expectation
