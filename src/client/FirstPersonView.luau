@@ -1,7 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Shows the arms and gun in first person, Roblox hides the whole character otherwise
+-- Shows the arms and gun in first person, Roblox hides the whole character otherwise.
+-- WeaponController enables it per equipped gun and calls Update every frame. The lists of
+-- parts to show and hide are cached and only rebuilt when something is added to or removed
+-- from the character, so the per frame cost is just setting a property on each cached part.
 
 local FirstPersonView = {}
 
@@ -23,6 +26,8 @@ local hiddenDecals: { Decal } = {}
 local needsRebuild = true
 local connections: { RBXScriptConnection } = {}
 
+-- BodyPart attribute is read first for the same reason HitZones does it, custom parts that
+-- keep another name still count as an arm or a head
 local function rebuild(model: Model)
 	table.clear(shownParts)
 	table.clear(hiddenParts)
