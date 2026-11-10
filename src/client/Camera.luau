@@ -1,7 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Sits on top of the default camera: FOV, sensitivity, shoulder offset, body rotation, recoil and scope snap
+-- Sits on top of the default camera: FOV, sensitivity, shoulder offset, body rotation, recoil
+-- and scope snap. It doesn't replace the default camera, it runs after it each frame and
+-- edits what it produced, so collisions and zoom limits still come from Roblox. It owns the
+-- aim, zoom and first person blend values, and WeaponController tells it when they change
+-- (Enable, SetAiming, SetZoom). Other modules read the results through the Get functions.
+-- Render order: camera (+1), AimPose (+3), scope (+4), WeaponController (+5).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -23,7 +28,8 @@ local Camera = {}
 local CAMERA_BIND_NAME = "GunCamera"
 local SCOPE_BIND_NAME = "GunScope"
 local CAMERA_PRIORITY = Enum.RenderPriority.Camera.Value + 1
-local SCOPE_PRIORITY = Enum.RenderPriority.Camera.Value + 4 -- after AimPose places the gun
+-- after AimPose places the gun, since the scope snaps to the gun's AimPoint
+local SCOPE_PRIORITY = Enum.RenderPriority.Camera.Value + 4
 
 local lerp = AngleMath.Lerp
 
@@ -66,6 +72,8 @@ local function faceDirection(root: BasePart, direction: Vector3)
 	end
 end
 
+-- savedAutoRotate is only captured the first time, otherwise taking rotation twice would
+-- save my own `false` and AutoRotate would never come back
 local function takeRotation(humanoid: Humanoid)
 	if not controllingRotation then
 		savedAutoRotate = humanoid.AutoRotate
@@ -92,6 +100,7 @@ local function getAimPoint(): Attachment?
 	end
 	if not warnedMissingAimPoint[current] then
 		warnedMissingAimPoint[current] = true
+		-- once per tool, this runs every frame while scoped and would flood the output
 		warn(`{current.Name}: add an Attachment named 'AimPoint' in Handle for first-person scoping`)
 	end
 	return nil
@@ -106,7 +115,8 @@ local function updateZoom(camera: Camera, weapon: Types.WeaponConfig, blend: num
 	local zoomFOV = if firstPerson then weapon.ScopeFOV else weapon.AimFOV
 	camera.FieldOfView = lerp(baseFOV, zoomFOV, zoomAlpha)
 
-	-- tan ratio keeps crosshair movement the same at any zoom
+	-- tan ratio keeps crosshair movement the same at any zoom, AimSensitivity is the per
+	-- weapon extra on top
 	local zoomSensitivity = math.tan(math.rad(zoomFOV) / 2) / math.tan(math.rad(baseFOV) / 2) * weapon.AimSensitivity
 	UserInputService.MouseDeltaSensitivity = lerp(1, zoomSensitivity, zoomAlpha)
 end
@@ -119,6 +129,8 @@ local function updateShoulder(humanoid: Humanoid, blend: number)
 	humanoid.CameraOffset = humanoid.CameraOffset:Lerp(target, blend)
 end
 
+-- While aiming the character faces where the camera looks, so the gun points at the crosshair.
+-- Writing root.CFrame is fine here since the client owns its own character's physics
 local function updateBodyRotation(camera: Camera, humanoid: Humanoid, root: BasePart)
 	if aiming then
 		UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
@@ -131,7 +143,8 @@ end
 
 local function updateRecoilAndShake(camera: Camera, deltaTime: number)
 	local pitch, yaw, shake = recoil:Step(deltaTime)
-	-- applied on top every frame so it recovers by itself
+	-- applied on top every frame and not baked into the player's real camera angle, so it
+	-- recovers by itself. Because GetAimRay reads this camera, shots do follow the kick
 	camera.CFrame *= CFrame.Angles(math.rad(pitch), math.rad(yaw), 0)
 	if shake > 1e-3 and firstPerson then
 		local t = os.clock() * CameraSettings.ShakeFrequency
@@ -152,7 +165,8 @@ local function updateCamera(deltaTime: number)
 	local camera = workspace.CurrentCamera
 	local blend = AngleMath.ExpBlend(deltaTime, CameraSettings.ZoomSpeed)
 
-	-- default camera has no first person flag, this is close enough
+	-- default camera has no first person flag, this is close enough: in first person the
+	-- camera sits on its focus point
 	firstPerson = (camera.Focus.Position - camera.CFrame.Position).Magnitude < 1
 	updateZoom(camera, weapon, blend)
 	updateShoulder(humanoid, blend)
@@ -171,6 +185,8 @@ local function updateScope()
 	end
 	local camera = workspace.CurrentCamera
 	local rotation = camera.CFrame.Rotation
+	-- AimPoint is pulled back by WeaponScaler on R15 so the eye isn't inside the rear sight,
+	-- EyeOffset is the per weapon tweak on top, zoomAlpha blends the snap in and out
 	local eye = point.WorldPosition + rotation:VectorToWorldSpace(weapon.EyeOffset)
 	camera.CFrame = CFrame.new(camera.CFrame.Position:Lerp(eye, zoomAlpha)) * rotation
 end
@@ -187,6 +203,8 @@ function Camera.Enable(weaponConfig: Types.WeaponConfig, fov: number, weaponTool
 	RunService:BindToRenderStep(SCOPE_BIND_NAME, SCOPE_PRIORITY, updateScope)
 end
 
+-- Puts back everything Enable and the update loop touched: sensitivity, FOV, AutoRotate,
+-- CameraOffset and mouse lock, otherwise unequipping would leave the camera zoomed or locked
 function Camera.Disable()
 	if not active then
 		return
