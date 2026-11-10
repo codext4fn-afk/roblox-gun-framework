@@ -1,5 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Poses an R6 character's neck and both shoulders from the pose table, so the arms can
+-- point where the player aims. Same module on the server and the client, JointLayer
+-- decides how the offset is written. It expects Torso with Neck, Right Shoulder and Left
+-- Shoulder motors and skips whichever one is missing.
 local RunService = game:GetService("RunService")
 
 local JointLayer = require(script.Parent.JointLayer)
@@ -16,6 +20,7 @@ type Joints = {
 
 -- server writes Transform, client writes C0 (see JointLayer)
 local layer = if RunService:IsServer() then JointLayer.Transform else JointLayer.C0
+-- found once per character instead of searching every frame
 local jointCache: { [Model]: Joints } = setmetatable({}, { __mode = "k" }) :: any
 
 local function findMotor(parent: Instance, name: string): Motor6D?
@@ -54,7 +59,8 @@ local PoseSolverR6: Types.PoseSolver = {
 		-- pitch only goes into the arms while aiming
 		local armPitch = pose.pitch * pose.aim + pose.armPitch
 		local armYaw = CFrame.Angles(0, pose.armYaw, 0)
-		-- R6 shoulders are mirrored so the left one gets flipped signs
+		-- R6 shoulders are mirrored so the left one gets flipped signs. armBack moves the arms
+		-- along the shoulder axis, which is why it's also negated for the right one
 		if joints.rightShoulder then
 			layer.Apply(joints.rightShoulder, CFrame.new(-pose.armBack, 0, 0) * armYaw * CFrame.Angles(0, 0, armPitch))
 		end
