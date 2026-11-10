@@ -1,5 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Client rig for R6 characters. Arms move through PoseSolverR6 and the gun stays on the
+-- RightGrip weld, so the only gun side work here is sprint carry and the first person push.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponSystem = ReplicatedStorage:WaitForChild("WeaponSystem")
@@ -15,10 +17,12 @@ local SPRINTING_ATTRIBUTE = "Sprinting"
 local SPRINT_PITCH = math.rad(-38)
 local SPRINT_YAW = math.rad(22)
 local SPRINT_ENTER_SPEED = 7
-local SPRINT_EXIT_SPEED = 12 -- faster out so you can shoot sooner
+-- faster out than in so you can shoot sooner after stopping a sprint
+local SPRINT_EXIT_SPEED = 12
 local FIRST_PERSON_PUSH_SPEED = 12
 
--- only if it's actually holding our Handle
+-- Only if it's actually holding our Handle, so a stale or swapped grip weld from another tool
+-- never gets its C1 edited
 local function getRightGrip(equipped: ClientTypes.Equipped): JointInstance?
 	local arm = equipped.character:FindFirstChild("Right Arm")
 	local weld = arm and arm:FindFirstChild("RightGrip")
