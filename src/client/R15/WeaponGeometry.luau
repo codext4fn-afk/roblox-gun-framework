@@ -2,6 +2,12 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 -- Reads AimPoint, SupportGrip and the mag well off a gun model, with fallbacks if they're missing
+-- Everything is worked out in the Handle's space, and the barrel axis comes from
+-- WeaponAxes.ForwardAxis because models aren't all built facing the same way. WeaponRig is the
+-- only user, it needs eyeFrame (where the eye goes to look down the sights) and supportFrame
+-- (where the off hand goes). Results are cached per tool, so a model edited while equipped
+-- won't be re-read.
+-- TODO(me): explain where SUPPORT_ALONG, SUPPORT_BELOW_BORE and the FALLBACK_EYE values come from
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -26,13 +32,16 @@ local SUPPORT_BELOW_BORE = 0.16
 local FALLBACK_EYE_HEIGHT = 0.35
 local FALLBACK_EYE_BACK = 0.25
 
-local cache: { [Tool]: Geometry | false } = setmetatable({}, { __mode = "k" }) :: any -- false means no Handle, don't keep retrying
+-- false means there's no Handle, so a broken tool isn't rebuilt on every frame
+local cache: { [Tool]: Geometry | false } = setmetatable({}, { __mode = "k" }) :: any
 
 local function attachmentPosition(handle: BasePart, name: string): Vector3?
 	local attachment = WeaponAxes.GetAttachment(handle, name)
 	return if attachment then attachment.Position else nil
 end
 
+-- Prefers the GunJoint's C0 since that's where the mag actually sits at rest, otherwise falls
+-- back to the mag part's position
 local function findMagazineWell(tool: Tool, handle: BasePart, config: Types.WeaponConfig): Vector3?
 	local part = tool:FindFirstChild(config.Magazine.Part, true)
 	local joint = part and part:FindFirstChild("GunJoint")
@@ -51,7 +60,8 @@ local function build(tool: Tool, config: Types.WeaponConfig): Geometry?
 	local muzzle = attachmentPosition(handle, "Muzzle") or forward * handle.Size:Dot(forward:Abs()) / 2
 	local length = handle.Size:Dot(forward:Abs())
 	local eye = attachmentPosition(handle, "AimPoint")
-	-- sights sit above the bore so use that for up
+	-- sights sit above the bore so use that for up: AimPoint's offset from the barrel axis points
+	-- toward the sights, snapped to an axis. Without an AimPoint it's world up and a guessed eye
 	local up: Vector3
 	if eye then
 		local lateral = eye - forward * eye:Dot(forward)
@@ -67,6 +77,7 @@ local function build(tool: Tool, config: Types.WeaponConfig): Geometry?
 
 	local boreHeight = muzzle:Dot(up)
 	local reach = (muzzle - eyePoint):Dot(forward)
+	-- no SupportGrip means the off hand position is an estimate along the gun below the bore
 	local supportAttachment = WeaponAxes.GetAttachment(handle, "SupportGrip")
 	local supportPoint = attachmentPosition(handle, "SupportGrip")
 	if not supportPoint then
