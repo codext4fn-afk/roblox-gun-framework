@@ -1,7 +1,13 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Load time sanity checks for merged weapon configs, returns every problem at once
+-- Load time sanity checks for merged weapon configs, run by WeaponRegistry on the config
+-- after Defaults were merged in, so every key should exist. It returns every problem at
+-- once so a broken file can be fixed in one pass.
+-- Most of this is here for the server: WeaponService trusts the config, so a bad
+-- FireInterval would hit the ShotClock assert in the middle of a match, and a fractional
+-- Pellets or MagSize would break the pellet count check and ammo. Failing at load means
+-- the weapon just doesn't register.
 
 local ConfigValidator = {}
 
@@ -13,10 +19,10 @@ local ENUMS = {
 }
 
 local ANIMATION_NAMES = { "Hold", "Aim", "Fire", "Reload" }
--- has to happen in this order
+-- these are fractions of ReloadTime for the mag animation, so they have to be in this order
 local MAGAZINE_STEPS = { "Out", "Drop", "Grab", "In" }
 
--- NaN and inf are numbers too, don't let them through
+-- NaN and inf are numbers too and would pass every comparison below, so rule them out first
 local function isNumber(value: any): boolean
 	return type(value) == "number" and value == value and value ~= math.huge and value ~= -math.huge
 end
@@ -32,6 +38,7 @@ end
 function ConfigValidator.Validate(config: { [string]: any }): { string }
 	local errors: { string } = {}
 
+	-- keep going after a failure, that's how all the errors get collected
 	local function check(passed: boolean, message: string)
 		if not passed then
 			table.insert(errors, message)
@@ -84,7 +91,8 @@ function ConfigValidator.Validate(config: { [string]: any }): { string }
 	local magazine = config.Magazine
 	check(type(magazine) == "table", "Magazine must be a table")
 	if type(magazine) == "table" then
-		-- each step has to come after the one before it
+		-- each step has to come after the one before it, previous carries the last good value
+		-- so one bad number doesn't make every later step fail too
 		local previous = 0
 		for _, step in MAGAZINE_STEPS do
 			local value = magazine[step]
