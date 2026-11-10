@@ -1,7 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Picks the anim id to play: config id, per weapon draft, shared id, then shared draft
+-- Picks the anim id to play: config id, per weapon draft, shared id, then shared draft.
+-- Drafts are KeyframeSequences kept under AnimationDrafts. Result is cached per rig and weapon (empty strings too, so
+-- a missing animation isn't looked up again every shot). Callers get "" when nothing
+-- exists and have to skip the animation.
 
 local AnimationClipProvider = game:GetService("AnimationClipProvider")
 
@@ -22,7 +25,8 @@ local function getDraftRoot(rig: Types.RigName): Instance?
 	return drafts and drafts:FindFirstChild(rig)
 end
 
--- drafts only register in Studio, live servers just get "" back
+-- drafts only register in Studio, live servers just get "" back. pcall because the register
+-- call errors when it isn't allowed, and that shouldn't take the weapon down with it
 local function registerDraft(parent: Instance?, name: string): string
 	local draft = parent and parent:FindFirstChild(name)
 	if not (draft and draft:IsA("KeyframeSequence")) then
