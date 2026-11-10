@@ -1,5 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Client only types, no runtime code. Equipped is what WeaponController keeps for the gun
+-- in the local player's hands, AimState is the per character pose and sway state that
+-- AimPose owns, and ClientRig is the interface Rigs/R6 and Rigs/R15 each implement so
+-- the controller never has to branch on rig type.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Types = require(ReplicatedStorage:WaitForChild("WeaponSystem"):WaitForChild("Types"))
