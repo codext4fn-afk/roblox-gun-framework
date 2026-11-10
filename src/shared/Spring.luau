@@ -1,6 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
+-- Spring used for weapon sway on the client. It's stateless, the caller keeps position and
+-- velocity and passes them back in each frame.
+
 local Spring = {}
 
 export type Params = {
@@ -23,7 +26,8 @@ function Spring.Step(
 	deltaTime: number,
 	params: Params
 ): (number, number)
-	-- fixed substeps so it behaves the same at any framerate
+	-- Fixed substeps so it behaves the same at any framerate. One big step with this much
+	-- stiffness would overshoot wildly on a slow frame, so the step size is capped
 	local steps = math.max(1, math.ceil(deltaTime / params.step))
 	local step = deltaTime / steps
 	for _ = 1, steps do
