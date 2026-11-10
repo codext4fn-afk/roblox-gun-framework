@@ -3,6 +3,12 @@
 
 -- Procedural arm motion for every armed character we can see: aim pitch, bob, sway and kick
 -- Local pitch comes from the camera, everyone else uses the replicated attributes
+--
+-- It owns one AimState per armed character and hands it to that character's ClientRig
+-- (Compose) every frame. It also sends the local player's pitch to the server, which is where
+-- the AimPitch attribute everyone else reads comes from. WeaponController calls Kick, Align
+-- and SetLocalAim on it, and it reads Camera for the local view.
+-- TODO(me): explain how this client posing of remote characters fits with PoseReplicator on the server, both pose them
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -29,10 +35,14 @@ type Entry = {
 }
 
 local POSE_BIND_NAME = "GunAimPose"
-local POSE_PRIORITY = Enum.RenderPriority.Camera.Value + 3 -- before WeaponController reads the gun
+-- before WeaponController (+5) and the scope (+4) read where the gun ended up
+local POSE_PRIORITY = Enum.RenderPriority.Camera.Value + 3
 local MAX_DELTA = 0.1 -- clamp so a lag spike doesn't launch the springs
+-- replicated pitch arrives in steps, this eases remote characters toward it
 local REMOTE_SMOOTHING = 15
--- send pitch max 15 times a second and only if it moved, heartbeat resends it anyway
+-- Send pitch max 15 times a second and only if it moved, heartbeat resends it anyway. The
+-- server limit for AimPitch is 30 a second, so a normal client never runs into it.
+-- TODO(me): explain why the heartbeat resend is needed
 local SEND_INTERVAL = 1 / 15
 local SEND_THRESHOLD = math.rad(0.5)
 local SEND_HEARTBEAT = 0.5
@@ -72,6 +82,7 @@ local lastSendTime, lastSentPitch = 0, 0
 local rng = Random.new()
 local started = false
 
+-- seed is random per character so two players holding the same gun don't sway in sync
 local function newState(entry: ClientTypes.ClientRig, tool: Tool): ClientTypes.AimState
 	return {
 		pose = entry.Solver.NewPose(),
@@ -108,6 +119,8 @@ local function stopTracking(character: Model)
 	end
 end
 
+-- Called on every tool change. Rigs with ResetOnToolChange start from fresh state for a new
+-- tool, the others keep their springs and just point at the new tool
 local function refreshTracking(character: Model)
 	local tool = WeaponRegistry.GetEquipped(character)
 	local entry = tracked[character]
@@ -143,6 +156,7 @@ local function watchPlayer(otherPlayer: Player)
 	end
 end
 
+-- clamped to the same limit the server clamps to, so what I send is never changed on arrival
 local function getCameraPitch(): number
 	local pitch = AngleMath.PitchOf(workspace.CurrentCamera.CFrame.LookVector)
 	return math.clamp(pitch, -Settings.Server.MaxPitch, Settings.Server.MaxPitch)
@@ -156,6 +170,7 @@ end
 local function getGroundSpeed(character: Model): number
 	local root = character:FindFirstChild("HumanoidRootPart")
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	-- no walk bob in the air, speed counts as 0 unless the humanoid is on the floor
 	if not (root and root:IsA("BasePart") and humanoid) or humanoid.FloorMaterial == Enum.Material.Air then
 		return 0
 	end
@@ -202,7 +217,8 @@ local function updateSprings(character: Model, state: ClientTypes.AimState, delt
 	local yaw = getRootYaw(character)
 	local armPitch = state.pose.pitch * state.pose.aim
 	local lastYaw, lastArmPitch = state.lastYaw, state.lastArmPitch
-	-- WrapAngle or turning across 180 reads as a full spin
+	-- WrapAngle or turning across 180 reads as a full spin. The rates feed the turn and look
+	-- sway springs, so the gun lags behind when you move the camera
 	local rawYawRate = if yaw and lastYaw then AngleMath.WrapAngle(yaw - lastYaw) / deltaTime else 0
 	local rawPitchRate = if lastArmPitch then (armPitch - lastArmPitch) / deltaTime else 0
 	state.lastYaw, state.lastArmPitch = yaw, armPitch
@@ -219,6 +235,8 @@ local function updateSprings(character: Model, state: ClientTypes.AimState, delt
 		Spring.Step(state.lookSway, state.lookVelocity, lookTarget, deltaTime, Spring.Sway)
 end
 
+-- Only the local character is sent, and only through this one place so the throttle below
+-- applies to everything
 local function sendLocalPitch()
 	local character = player.Character
 	local entry = character and tracked[character]
@@ -250,6 +268,7 @@ local function getLocalView(character: Model): ClientTypes.View
 end
 
 local function update(rawDeltaTime: number)
+	-- clamped so one long frame doesn't launch the springs and bob phase
 	local deltaTime = math.min(rawDeltaTime, MAX_DELTA)
 	if deltaTime <= 0 then
 		return
@@ -260,6 +279,7 @@ local function update(rawDeltaTime: number)
 	local now = os.clock()
 
 	for character, entry in tracked do
+		-- this loop is also the cleanup for characters that lost their tool or got removed
 		local tool, config = WeaponRegistry.GetEquipped(character)
 		local state = entry.state
 		if not character.Parent or not tool or not config then
