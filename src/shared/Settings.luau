@@ -1,6 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
+-- Every tunable number lives here. The Server table is the one that matters for security,
+-- it's what WeaponService and friends enforce (rate limits, how far an origin may be from
+-- the head, spread tolerance, replication range). The R15 table is read by the server too
+-- (WeaponScaler uses WeaponScale and EyeRelief), the rest is client feel and visuals.
+-- Nothing in here is checked at load, a bad number shows up where it's used.
+
 export type ActionName = "Fire" | "Aim" | "Reload" | "SwitchShoulder"
 
 export type TouchButton = {
@@ -40,6 +46,7 @@ local sharedAnimations: { [Types.RigName]: Types.AnimationIds } = {
 
 local Settings = {
 	Server = {
+		-- TODO(me): explain how 6 was chosen, it's the cap on how far a shot origin can be from the head
 		MaxOriginOffset = 6, -- studs from the head
 		FireRateBurst = 1.15, -- a bit of slack for network jitter
 		SpreadTolerance = 1.5, -- degrees on top of HipSpread
@@ -48,6 +55,8 @@ local Settings = {
 		CreatorTagLifetime = 2, -- seconds
 		HumanoidWait = 5,
 		PoseSmoothing = 15,
+		-- minimum gap between requests per player, used by RequestLimiter. SetAiming is never
+		-- dropped, WeaponService delays it by this interval instead
 		RequestIntervals = {
 			Reload = 0.3,
 			SetAiming = 1 / 20,
