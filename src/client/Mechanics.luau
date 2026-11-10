@@ -2,6 +2,13 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 -- Bolt and mag movement on the gun, all client side through GunJoint C0s
+--
+-- Purely cosmetic, runs for the local player and for other players (RemoteWeapons goes through
+-- the rigs). Parts move by changing the C0 of a Motor6D called GunJoint, so the first time I
+-- see a joint I remember its resting C0 and Part0 in jointBases, and Cancel puts them back.
+-- A reload is a few steps (Out, Drop, Grab, In) that either fire off animation markers or
+-- run on timers from fractions of ReloadTime. I expect each step to be safe to abort, any of
+-- them can be cancelled by an unequip or a character reset.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,7 +35,8 @@ local RELOAD_MARKERS: { [string]: string } = {
 	Grab = "MagGrab",
 	In = "MagIn",
 }
-local RELOAD_TIMEOUT_PADDING = 0.5 -- cancel if a marker never fires
+-- cancel if a marker never fires, otherwise the mag would stay off the gun
+local RELOAD_TIMEOUT_PADDING = 0.5
 local DROP_COLLIDE_DELAY = 0.15 -- let the mag fall clear before it can collide
 
 type JointBase = {
@@ -97,7 +105,9 @@ local function setVisible(part: BasePart, visible: boolean)
 	end
 end
 
--- swap Part0 without the part jumping
+-- Swap Part0 without the part jumping: C0 is recalculated so the mag stays exactly where it
+-- is in the world, then the next tween moves it from there. This is how the mag goes from
+-- the gun to the hand and back
 local function reattach(joint: Motor6D, newPart0: BasePart)
 	local part1 = joint.Part1
 	if part1 then
@@ -106,7 +116,8 @@ local function reattach(joint: Motor6D, newPart0: BasePart)
 	joint.Part0 = newPart0
 end
 
--- mag comes out away from the barrel line
+-- mag comes out away from the barrel line: take the joint's offset, remove the part along the
+-- barrel axis, and what's left points from the barrel to the mag, so it slides the other way
 local function getInsertAxis(tool: Tool, joint: Motor6D): Vector3
 	local forward = WeaponAxes.ForwardAxis(tool)
 	local position = jointBases[joint].C0.Position
@@ -127,6 +138,9 @@ local function getHoldTarget(joint: Motor6D, part: BasePart, hand: BasePart, mag
 	return CFrame.new(palm.Position) * relative.Rotation * joint.C1
 end
 
+-- The dropped mag is a clone with its joints removed, the real one stays on the gun and just
+-- goes invisible (setVisible) until Grab. Collision comes on after DROP_COLLIDE_DELAY so it
+-- falls clear of the gun and hand first
 local function dropCopy(part: BasePart, source: BasePart, lifetime: number)
 	local copy = part:Clone()
 	for _, item in copy:GetDescendants() do
@@ -174,7 +188,8 @@ local function boltCurve(cycle: BoltCycle, elapsed: number): number
 	return 1 - t * t
 end
 
--- stepped by hand, restarting a tween every shot stutters at high rpm
+-- Stepped by hand, restarting a tween every shot stutters at high rpm. There's one shared
+-- PreRender connection that disconnects itself once no bolt is cycling
 local function stepBolts()
 	local now = os.clock()
 	for joint, cycle in cyclingBolts do
@@ -213,6 +228,8 @@ function Mechanics.CycleBolt(tool: Tool, config: Types.WeaponConfig)
 	end
 end
 
+-- Rack depends on the reload config: BoltFeed always opens the bolt, otherwise Rack says
+-- Never, Always, or Empty (only when the mag was empty, which is the `chamber` option)
 function Mechanics.RackDuringReload(tool: Tool, config: Types.WeaponConfig, wasEmpty: boolean)
 	local reload, bolt = config.Reload, config.Bolt
 	local joint = getJoint(tool, bolt.Part)
@@ -229,6 +246,7 @@ function Mechanics.RackDuringReload(tool: Tool, config: Types.WeaponConfig, wasE
 	local closeAt = (if feed then magazine.In + 0.13 else magazine.In + 0.2) * duration
 	local base = jointBases[joint].C0
 	-- manual rack pulls a bit further than recoil does
+	-- TODO(me): explain the 0.12, 0.13 and 0.2 offsets on the open and close timings below
 	local open = CFrame.new(-WeaponAxes.ForwardAxis(tool) * bolt.Travel * 1.2) * base
 	task.delay(openAt, function()
 		if joint.Parent and tool.Parent then
@@ -284,6 +302,8 @@ function Mechanics.Reload(
 	local base = jointBases[joint]
 	local unseated = CFrame.new(-getInsertAxis(tool, joint) * magazine.InsertDepth) * base.C0
 
+	-- every step checks this after it yields, the tool can be unequipped or the character
+	-- gone while a tween was running
 	local function isActive(): boolean
 		return activeReloads[tool] == reload and tool.Parent == character and hand.Parent ~= nil
 	end
@@ -342,6 +362,7 @@ function Mechanics.Reload(
 		end,
 	}
 
+	-- finished makes each step run at most once, so a marker and the timer can't both fire it
 	local function runStep(stepName: string)
 		if activeReloads[tool] ~= reload or reload.finished[stepName] then
 			return
