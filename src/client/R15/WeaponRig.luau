@@ -3,6 +3,14 @@
 
 -- Places the gun and both arms for R15 every frame
 -- Works back from the eye: sight line, offsets, handle, then IK
+--
+-- It keeps one RigState per character (draw progress, first person blend, sprint, wall
+-- obstruction, the running reload motion) and is called from Rigs/R15.Compose for the local
+-- player and for everyone else. `view` is only given for the local player, so remote characters
+-- aim from their replicated pitch instead of the camera. The gun itself isn't moved directly:
+-- the arms are solved to where the RightGrip weld wants the hand and the weld carries the gun.
+-- Geometry comes from WeaponGeometry, arms from ArmSolver, reloads from ReloadMotion.
+-- TODO(me): explain the tuning constants at the top (EYE_OFFSET, the poles, sway and bob values)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -143,6 +151,9 @@ local function firstPersonEye(
 	return hipEye(camera, config, tool, geometry):Lerp(sights, smoothstep(zoom))
 end
 
+-- First person only: a ray from the camera, a little longer than the gun, tells how close a
+-- wall is, and the gun gets pushed toward OBSTRUCTED the nearer it is, so it doesn't poke
+-- through geometry
 local function measureObstruction(character: Model, view: ClientTypes.View, reach: number): number
 	local length = reach + OBSTRUCTION_MARGIN
 	local result =
@@ -218,7 +229,8 @@ end
 
 local SIDES: { ArmSolver.Side } = { "Right", "Left" }
 
--- short armed avatars can't always reach, pull the gun in
+-- short armed avatars can't always reach, pull the gun in. Each hand is checked in turn against
+-- its max reach, and the shift from the first hand is included when checking the second
 local function reachCorrection(
 	character: Model,
 	shoulderSpace: CFrame,
@@ -255,7 +267,7 @@ local function advance(
 	handling: Types.HandlingConfig,
 	obstruction: number
 )
-	-- linear so the draw always takes DrawTime
+	-- linear so the draw always takes DrawTime, the smoothing is applied where it's used
 	rig.drawn = math.min(rig.drawn + deltaTime / handling.DrawTime, 1)
 	local targetView = if view and view.firstPerson then 1 else 0
 	rig.firstPerson += (targetView - rig.firstPerson) * expBlend(deltaTime, VIEW_BLEND_SPEED)
@@ -315,6 +327,8 @@ function WeaponRig.Update(
 		eye = eye:Lerp(firstPersonEye(view.camera, config, view.zoom, tool, geometry), smoothstep(rig.firstPerson))
 	end
 	local swayScale = if view then 1 + (ADS_SWAY_KEEP - 1) * smoothstep(view.zoom) else 1
+	-- Order matters from here: each offset multiplies onto the eye in eye space, so sway comes
+	-- first and the draw lerp last. Sway is reduced while zoomed so the sights stay steady
 	eye *= motionOffset(pose, motion, swayScale)
 	if rig.sprint > 1e-3 then
 		eye *= IDENTITY:Lerp(handling.SprintCarry, smoothstep(rig.sprint))
@@ -341,6 +355,7 @@ function WeaponRig.Update(
 	local handle = eye * geometry.eyeFrame:Inverse()
 	local rightTarget, leftTarget = placeHands(handle)
 	if view and rig.firstPerson > 1e-3 then
+		-- fades out as zoom goes to 1, so the sight line stays on the camera when fully zoomed
 		local weight = smoothstep(rig.firstPerson) * (1 - smoothstep(view.zoom))
 		local shift = reachCorrection(character, shoulderSpace, rightTarget, leftTarget) * weight
 		if shift.Magnitude > 1e-4 then
@@ -365,6 +380,7 @@ function WeaponRig.StartReload(character: Model, tool: Tool, config: Types.Weapo
 	rig.reload = ReloadMotion.new(tool, config, options)
 end
 
+-- while this track plays the animation drives the arms (see advance, armWeight goes to 0)
 function WeaponRig.ReleaseArms(character: Model, track: AnimationTrack)
 	getRig(character).armTrack = track
 end
