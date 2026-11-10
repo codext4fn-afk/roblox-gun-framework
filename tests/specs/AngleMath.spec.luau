@@ -1,5 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Pins down the angle conventions the pose and camera code rely on: yaw 0 faces -Z, wrapping
+-- goes to [-pi, pi) so lerps take the short way round, and the dominant axis picks the barrel
+-- direction for models built facing different ways.
 local roblox = require("@lune/roblox")
 
 local Vector3 = roblox.Vector3
