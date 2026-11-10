@@ -1,7 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Shared types, no runtime code in here
+-- Shared types, no runtime code in here. Every module on the server, client and editor
+-- side imports from this file, so a change to WeaponConfig shows up everywhere. It
+-- trusts nothing and expects nothing, it's only shapes. ConfigValidator is what checks
+-- that real configs actually match them at load time.
 
 export type FireMode = "Auto" | "Semi"
 export type HitZone = "Head" | "Torso" | "Limb"
@@ -109,7 +112,9 @@ export type WeaponConfig = {
 	Handling: HandlingConfig,
 }
 
--- same as WeaponConfig but everything optional, keep the two in sync
+-- Same as WeaponConfig but everything optional, because a weapon file only lists what it
+-- changes and ConfigMerge fills the rest from Defaults. The two have to be edited together,
+-- nothing checks that they match
 export type WeaponOverrides = {
 	Mode: FireMode?,
 	FireInterval: number?,
