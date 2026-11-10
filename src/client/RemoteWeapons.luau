@@ -2,6 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 -- Plays other players' shots and reloads, the server never sends you your own
+-- (WeaponService skips the shooter when it picks who gets ReplicateShot, because the shooter
+-- already played it locally). The payload comes from the server so it's trusted for what
+-- happened, but I still type check it since a remote can carry anything. Positions in a shot
+-- are the server's own raycast results.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -65,7 +69,8 @@ local function onRemoteReload(rawTool: unknown)
 		onSeated = function()
 			AimPose.Kick(shooter, config.Magazine.SeatKick)
 		end,
-		chamber = false, -- server doesn't send the old ammo count so no empty rack
+		-- server doesn't send the old ammo count, so I can't know if it was empty (no rack)
+		chamber = false,
 		track = nil,
 		isTracked = function()
 			return AimPose.IsTracked(shooter)
