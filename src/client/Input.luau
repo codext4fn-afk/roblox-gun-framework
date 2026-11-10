@@ -1,5 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Turns key, mouse, gamepad and touch input into the four gun actions (see Settings.Controls
+-- and Settings.Touch). WeaponController binds it on equip and unbinds on unequip, so none
+-- of these actions exist while no gun is held. Handlers only get a pressed or released
+-- bool, nothing else knows which device was used.
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -25,7 +29,8 @@ local function makeActionHandler(action: Settings.ActionName, handler: Handler)
 	local touch = Settings.Touch[action]
 	return function(_: string, inputState: Enum.UserInputState, inputObject: InputObject): Enum.ContextActionResult
 		local isTouch = inputObject.UserInputType == Enum.UserInputType.Touch
-		-- holding buttons on a phone sucks so some touch buttons toggle instead
+		-- holding buttons on a phone sucks so some touch buttons toggle instead. Only Begin
+		-- counts, the release of the tap is ignored, the state lives in `toggled`
 		if isTouch and touch and touch.Toggle then
 			if inputState == Enum.UserInputState.Begin then
 				toggled[action] = not toggled[action]
@@ -36,13 +41,16 @@ local function makeActionHandler(action: Settings.ActionName, handler: Handler)
 		if inputState == Enum.UserInputState.Begin then
 			handler(true)
 		elseif inputState == Enum.UserInputState.End or inputState == Enum.UserInputState.Cancel then
-			handler(false) -- Cancel means focus was lost, treat it as a release
+			-- Cancel means focus was lost, treat it as a release or the trigger could stay held
+			handler(false)
 		end
+		-- Sink so the same click doesn't also reach the default camera or other bindings
 		return Enum.ContextActionResult.Sink
 	end
 end
 
 function Input.Bind(handlers: Handlers)
+	-- unbind first so binding twice (equip without an unequip) can't double up the actions
 	Input.Unbind()
 	for _, action: Settings.ActionName in ACTIONS do
 		local handler = handlers[action]
@@ -63,6 +71,7 @@ function Input.Unbind()
 	for _, action: Settings.ActionName in ACTIONS do
 		ContextActionService:UnbindAction(ACTION_PREFIX .. action)
 	end
+	-- otherwise a toggled Aim from the last gun would still read as on for the next one
 	table.clear(toggled)
 end
 
@@ -74,7 +83,8 @@ function Input.IsUsingTouch(): boolean
 	return UserInputService:GetLastInputType() == Enum.UserInputType.Touch
 end
 
--- gamepad, touch or mouse locked
+-- When the cursor isn't a free pointer the aim ray goes through the middle of the screen,
+-- and the crosshair is drawn there too
 function Input.UsesScreenCenter(): boolean
 	return Input.IsUsingGamepad()
 		or Input.IsUsingTouch()
