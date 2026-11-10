@@ -1,7 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Camera recoil in degrees, kicks stack up and decay back to zero
+-- Camera recoil in degrees, client only, the server never sees any of this. Kicks stack up
+-- and decay back to zero, the caller reads pitch, yaw and shake out of Step every
+-- frame. The sideways roll comes from the caller so this module never calls math.random.
 
 local Recoil = {}
 Recoil.__index = Recoil
@@ -43,7 +45,8 @@ function Recoil.Shake(self: Recoil, degrees: number)
 end
 
 function Recoil.Step(self: Recoil, deltaTime: number): (number, number, number)
-	-- exp decay so recovery takes the same time at any framerate
+	-- exp decay so recovery takes the same time at any framerate, a flat subtraction per
+	-- frame would recover faster on a 144hz screen than a 30fps one
 	local decay = math.exp(-deltaTime * self.params.recovery)
 	self.pitch *= decay
 	self.yaw *= decay
