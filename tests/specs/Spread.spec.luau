@@ -1,7 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Spread math. Samples use a seeded generator so the cone tests are the same every run, and
--- the area test is what catches the sqrt being removed from SampleCone.
+--[[
+    Spread math with a seeded generator, the area test catches the sqrt being removed from SampleCone
+]]
 local roblox = require("@lune/roblox")
 
 local Vector3 = roblox.Vector3

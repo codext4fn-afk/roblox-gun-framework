@@ -1,15 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Procedural R15 reload, keyframes the support hand and the mag and bolt follow it
--- Keys get rebuilt every frame from the live handle so the hand follows the gun
---
--- One instance per running reload, owned by WeaponRig (StartReload creates it, Advance and
--- Evaluate run every frame, Finish cleans up). It's used when the gun's config has
--- ReloadUsesAnimation off, otherwise Mechanics and the reload animation do the job. Time is
--- `progress` from 0 to 1 over config.ReloadTime, and the Magazine config fractions (Out, Drop,
--- Grab, In) are positions on that same scale. Everything it touches (mag joint, bolt joint,
--- transparency, the prop) has to be put back by Finish, a reload can be replaced or aborted.
+--[[
+    Procedural R15 reload, keyframes the support hand and the mag and bolt follow it
+    Keys are rebuilt every frame from the live handle so the hand follows the gun
+    One per running reload, owned by WeaponRig, and used when ReloadUsesAnimation is off
+    Finish has to put everything back since a reload can be replaced or aborted
+]]
 -- TODO(me): explain the geometry constants (GRIP_ALONG, PULL_CLEAR, LINE_UP, ROCK_ANGLE, the 0.12 bolt palm offset)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -111,8 +108,8 @@ local RACK_REACH, RACK_PULL, RACK_RELEASE = 0.07, 0.06, 0.03
 
 local smoothstep = AngleMath.Smoothstep
 
--- Uses the mag joint if there is one, otherwise a MagazineWell attachment (prop guns).
--- `down` is the direction the mag slides out, `length` how long it is along that direction.
+-- Uses the mag joint if there is one, otherwise a MagazineWell attachment (prop guns)
+-- `down` is the direction the mag slides out, `length` how long it is along that direction
 -- The authored MagazineLength is multiplied by the R15Scale attribute that WeaponScaler puts
 -- on the tool, since the gun was shrunk on the server and the number was written for full size
 local function wellGeometry(tool: Tool, part: BasePart?, joint: Motor6D?): (CFrame?, Vector3, number)

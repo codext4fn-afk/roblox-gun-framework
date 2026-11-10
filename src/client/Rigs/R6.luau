@@ -1,7 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Client rig for R6 characters. Arms move through PoseSolverR6 and the gun stays on the
--- RightGrip weld, so the only gun side work here is sprint carry and the first person push.
+--[[
+    Client rig for R6, arms go through PoseSolverR6 and the gun stays on the RightGrip weld
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponSystem = ReplicatedStorage:WaitForChild("WeaponSystem")

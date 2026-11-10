@@ -1,15 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Places the gun and both arms for R15 every frame
--- Works back from the eye: sight line, offsets, handle, then IK
---
--- It keeps one RigState per character (draw progress, first person blend, sprint, wall
--- obstruction, the running reload motion) and is called from Rigs/R15.Compose for the local
--- player and for everyone else. `view` is only given for the local player, so remote characters
--- aim from their replicated pitch instead of the camera. The gun itself isn't moved directly:
--- the arms are solved to where the RightGrip weld wants the hand and the weld carries the gun.
--- Geometry comes from WeaponGeometry, arms from ArmSolver, reloads from ReloadMotion.
+--[[
+    Places the gun and both arms for R15 every frame
+    Works back from the eye: sight line, offsets, handle, then IK
+    The arms are solved to where the RightGrip weld wants the hand, and the weld carries the gun
+    view only exists for the local player, remote characters aim from their replicated pitch
+]]
 -- TODO(me): explain the tuning constants at the top (EYE_OFFSET, the poles, sway and bob values)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

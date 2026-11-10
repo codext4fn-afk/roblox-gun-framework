@@ -1,9 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Poses an R15 character's waist and neck from the pose table. The same module runs on the
--- server (PoseReplicator) and the client, JointLayer decides how the offset gets written.
--- It expects UpperTorso with a Waist joint and a Head with a Neck joint, and quietly does
--- nothing for a rig that doesn't have them. Arm posing for R15 isn't here.
+--[[
+    Poses an R15 waist and neck from the pose table
+    Same module on server and client, JointLayer decides how it's written
+    Quietly does nothing if the joints are missing
+]]
 local RunService = game:GetService("RunService")
 
 local JointLayer = require(script.Parent.JointLayer)

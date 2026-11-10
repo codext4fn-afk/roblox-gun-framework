@@ -1,14 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Local player's gun: input, aiming, firing, reloading and the per frame update.
---
--- Everything here is prediction. Shots, tracers, hitmarkers and the reload animation play
--- right away for responsiveness, but the server decides what really happened, so the
--- ammo count and reload state shown on the HUD come back from the Tool attributes it sets.
--- The server refuses Fire unless its Aiming attribute is on, which is why SetAiming has to
--- be sent whenever `aiming` changes here. I expect Camera, AimPose, Effects, Hud and the
--- Rigs table to do the presentation, and this module only decides when to call them.
+--[[
+    Local player's gun: input, aiming, firing, reloading and the per frame update
+    All of it is prediction, the server decides what happened and ammo and reload state come back through Tool attributes
+    The server refuses Fire unless Aiming is on, so SetAiming is sent whenever aiming changes here
+]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -404,7 +401,7 @@ local function onFrame(deltaTime: number)
 	)
 end
 
--- Watch the character instead of Tool.Equipped so tools parented by other scripts work too.
+-- Watch the character instead of Tool.Equipped so tools parented by other scripts work too
 -- This matches how the server decides a gun is equipped (Tool.Parent == character)
 local function onCharacter(character: Model)
 	unequip()

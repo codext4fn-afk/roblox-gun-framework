@@ -1,11 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Every tunable number lives here. The Server table is the one that matters for security,
--- it's what WeaponService and friends enforce (rate limits, how far an origin may be from
--- the head, spread tolerance, replication range). The R15 table is read by the server too
--- (WeaponScaler uses WeaponScale and EyeRelief), the rest is client feel and visuals.
--- Nothing in here is checked at load, a bad number shows up where it's used.
+--[[
+    Every tunable number lives here
+    Server is what the server enforces, R15 is also read by WeaponScaler, the rest is client feel
+    Nothing is checked at load, a bad number shows up where it's used
+]]
 
 export type ActionName = "Fire" | "Aim" | "Reload" | "SwitchShoulder"
 

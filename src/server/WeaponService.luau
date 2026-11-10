@@ -1,16 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Server side of the gun system. The client predicts everything for responsiveness, and
--- this module is the one that decides what actually happened. It owns ammo, reload state,
--- the Aiming and AimPitch attributes, per character setup and the four client remotes.
--- Replicated state: Tool.Ammo, Tool.Reloading, Character.Aiming, Character.AimPitch.
---
--- I only trust two things from a client: which tool it says it's using and a set of
--- directions, and both get validated (ShotValidator for the values, getEquippedGun for
--- the tool). Damage math lives in DamageResolver, posing in PoseReplicator, and I expect
--- WeaponRegistry.GetConfig to accept junk and return nil, since the tool argument comes
--- straight off a remote.
+--[[
+    Server side of the gun system, the client predicts and this decides
+    Owns ammo, reload state, Aiming and AimPitch, per character setup and the four client remotes
+    Only the tool and the pellet directions come from the client and both get validated
+    Replicated state: Tool.Ammo, Tool.Reloading, Character.Aiming, Character.AimPitch
+]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -38,7 +34,7 @@ type ToolState = {
 	-- Bumped on every reload and checked again when the reload timer fires, so a timer that
 	-- belongs to an older reload does nothing. Right now only onReload bumps it, and the
 	-- Reloading flag already blocks a second reload, so it never differs in practice. It's
-	-- here so a future cancel (unequip, death) only has to bump it to stop the refill.
+	-- here so a future cancel (unequip, death) only has to bump it to stop the refill
 	reloadToken: number,
 }
 
@@ -100,7 +96,7 @@ local function getHead(character: Model): BasePart?
 end
 
 -- The shot origin is client supplied, so without this you could put it on the far side of
--- a thin wall and shoot through. Cast from the head, which the server knows, to the origin.
+-- a thin wall and shoot through. Cast from the head, which the server knows, to the origin
 -- Accessories and held tools have CanQuery off so they don't count as walls
 local function hasLineOfSight(character: Model, from: Vector3, to: Vector3): boolean
 	local offset = to - from
@@ -139,7 +135,7 @@ end
 -- Order matters here. Cheap checks first, then the raycast for line of sight, and the
 -- ShotClock goes last so a request that was going to be refused anyway doesn't use up
 -- burst credit. Ammo is only touched once everything has passed. There's no limiter on
--- Fire itself, the ShotClock is the limit.
+-- Fire itself, the ShotClock is the limit
 local function onFire(player: Player, tool: unknown, origin: unknown, aimDirection: unknown, directions: unknown)
 	local character, equipped, config = getEquippedGun(player, tool)
 	if not (character and equipped and config) or not isAiming(player, character) then

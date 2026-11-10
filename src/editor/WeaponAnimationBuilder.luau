@@ -1,14 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Generates per weapon anim drafts into AnimationDrafts, run Build("AK") from the command bar
--- Studio only, publish them and put the ids in the config
---
--- It starts from the shared animations (Settings.SharedAnimations, or an existing shared draft)
--- and adapts them to one weapon: the R6 reload moves the left arm to the gun's own mag, bolt and
--- support points, and the R15 body animations are scaled by how heavy the gun kicks. The weapon
--- has to be a Tool with a Handle in StarterPack and have a config. WeaponAnimations is what
--- picks the drafts up in Studio, so a draft only matters until its id is published.
+--[[
+    Generates per weapon anim drafts into AnimationDrafts, run Build("AK") from the command bar
+    Studio only, publish the drafts and put the ids in the config
+    The R6 reload is solved to the gun's own points, R15 clips are scaled by ArmKick
+]]
 -- TODO(me): explain the tuning numbers (BELOW_WELL, the 0.04/0.06/0.08/0.22 key offsets, 0.85 hip blend, 1.2 bolt pull)
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")

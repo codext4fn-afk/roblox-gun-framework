@@ -1,10 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Base values for every weapon, configs only override what they need. WeaponRegistry
--- merges each Configs module over this table, and ConfigMerge.UnknownKeys uses it as the
--- list of keys that are allowed, so a new setting has to be added here before any weapon
--- can use it (and in Types as well).
+--[[
+    Base values for every weapon, configs only override what they need
+    A new setting has to be added here (and in Types) before any config can use it
+]]
 
 local Types = require(script.Parent.Types)
 

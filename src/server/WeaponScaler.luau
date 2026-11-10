@@ -1,10 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Shrinks R6 scale gun models to fit R15 hands. It runs on the server because Size and
--- joint changes made here replicate, so every client sees the same gun. I expect tools to
--- be authored at R6 scale and WeaponService to call Apply once per tool when the owner is
--- R15. Factor and eye relief come from Settings.R15.
+--[[
+    Shrinks R6 scale gun models to fit R15 hands
+    Runs on the server so the new size replicates to everyone
+    WeaponService calls Apply once per tool, factor and eye relief come from Settings.R15
+]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -35,7 +36,7 @@ function WeaponScaler.Apply(tool: Tool, factor: number, eyeRelief: number)
 		return
 	end
 	local origin = handle.CFrame
-	-- WeldConstraints snap parts back when they move, turn them off while we reposition.
+	-- WeldConstraints snap parts back when they move, turn them off while we reposition
 	-- Joints are different, they only store C0/C1 so I scale those in the same pass
 	local welds: { WeldConstraint } = {}
 	for _, item in tool:GetDescendants() do

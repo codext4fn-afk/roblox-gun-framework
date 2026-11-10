@@ -1,8 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Maps a part the server's own raycast hit to a damage zone and finds who owns it. Zones
--- are always worked out here from the hit part, the client never says which zone it hit.
--- DamageResolver is the only caller that matters, it expects config.Damage to have all three.
+--[[
+    Maps the part the server's raycast hit to a damage zone and finds who owns it
+    The client never says which zone it hit
+]]
 local Types = require(script.Parent.Types)
 
 -- anything not in here counts as a limb

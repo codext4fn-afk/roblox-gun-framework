@@ -1,10 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Drives the GunHUD gui, the layout itself is in assets/GunHUD.model.json. It only sets what
--- it's told (ammo text, crosshair gap, hitmarker, vignette), WeaponController decides when.
--- I expect the gui to have the exact child names bind() waits for, and it waits forever if one
--- is missing. The HUD is looked up lazily on first Show so it doesn't need to exist at require.
+--[[
+    Drives the GunHUD gui, the layout is in assets/GunHUD.model.json
+    Only sets what it's told, WeaponController decides when
+    bind() waits forever if a child name is missing from the gui
+]]
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")

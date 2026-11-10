@@ -1,8 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Client rig for R15 characters. Pose and sway go through PoseSolverR15, and the gun, hands and
--- magazine are driven by R15/WeaponRig, so Compose mostly just feeds the pose in. It's used
--- for the local player and for everyone else we can see.
+--[[
+    Client rig for R15, pose goes through PoseSolverR15 and the gun and hands through R15/WeaponRig
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponSystem = ReplicatedStorage:WaitForChild("WeaponSystem")

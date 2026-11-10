@@ -1,8 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Spring used for weapon sway on the client. It's stateless, the caller keeps position and
--- velocity and passes them back in each frame.
+--[[
+    Spring for weapon sway, stateless: the caller keeps position and velocity
+]]
 
 local Spring = {}
 

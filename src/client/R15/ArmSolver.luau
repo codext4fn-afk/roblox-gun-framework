@@ -1,11 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Two bone IK for R15 arms, writes the shoulder, elbow and wrist C0s so the hand lands on target
--- Only C0 is written, Transform is left to the Animator, and every joint's original C0 is
--- remembered so Reset can restore it. WeaponRig is the caller: it gives a hand target and a pole
--- (the direction the elbow should point), and weight says how much IK vs the original pose. An
--- animation that wants the arms back gets weight 0 and the joints blend to their rest C0.
+--[[
+    Two bone IK for R15 arms, writes shoulder, elbow and wrist C0s so the hand reaches the target
+    WeaponRig gives a hand target and a pole, weight blends back to the original C0 so an animation can take the arms over
+]]
 -- TODO(me): explain MAX_PROTRACTION and FOREARM_TWIST, I don't know how those were picked
 
 export type Side = "Right" | "Left"

@@ -1,11 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Turns accepted pellet directions into damage. The client only ever picks directions,
--- so every pellet is recast here and damage comes from the server's own config and hit
--- zones. It trusts that WeaponService already validated the shooter, the tool and the
--- directions (finite, unit length, inside the spread cone). It expects config.Damage to
--- have an entry for every HitZone.
+--[[
+    Turns accepted pellet directions into damage
+    Every pellet is recast here and damage comes from the server's config and hit zones
+    Trusts that WeaponService already validated the shooter, tool and directions
+]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

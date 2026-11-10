@@ -1,9 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Loads the Hold, Aim, Fire and Reload animations for a weapon on a humanoid's Animator.
--- WeaponAnimations decides which asset id each one is, this module only turns ids into
--- tracks, sets priorities and caches them. A missing animation is just absent from the table,
--- so callers must nil check every track.
+--[[
+    Loads the Hold, Aim, Fire and Reload tracks for a weapon and caches them per Animator
+    WeaponAnimations picks the ids, this only builds the tracks
+    A missing animation is just absent, so callers nil check every track
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponSystem = ReplicatedStorage:WaitForChild("WeaponSystem")

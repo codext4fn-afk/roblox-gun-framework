@@ -1,10 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Shared types, no runtime code in here. Every module on the server, client and editor
--- side imports from this file, so a change to WeaponConfig shows up everywhere. It
--- trusts nothing and expects nothing, it's only shapes. ConfigValidator is what checks
--- that real configs actually match them at load time.
+--[[
+    Shared types, no runtime code
+    ConfigValidator is what checks that real configs match them
+]]
 
 export type FireMode = "Auto" | "Semi"
 export type HitZone = "Head" | "Torso" | "Limb"

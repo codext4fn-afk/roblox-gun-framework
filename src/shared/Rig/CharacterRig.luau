@@ -3,8 +3,12 @@
 local Types = require(script.Parent.Parent.Types)
 
 -- Rig type and liveness checks on a character model. The server uses IsAlive to gate firing
--- and reloading, so it's based on Humanoid.Health and not on anything the client says.
+-- and reloading, so it's based on Humanoid.Health and not on anything the client says
 
+--[[
+    Rig type and liveness checks on a character model
+    The server uses IsAlive to gate firing and reloading, it reads Humanoid.Health and nothing the client says
+]]
 local CharacterRig = {}
 
 function CharacterRig.GetHumanoid(character: Instance?): Humanoid?

@@ -1,8 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Each test is a kind of bad input an exploiter could send over the Fire remote: strings,
--- NaN, inf, zero length aim, too many or padded pellet lists, pellets outside the cone, an origin
--- far from the head. A rejection is a string reason, nil means the arguments are fine.
+--[[
+    Each test is a kind of bad input an exploiter could send over the Fire remote
+]]
 local roblox = require("@lune/roblox")
 
 local Vector3 = roblox.Vector3

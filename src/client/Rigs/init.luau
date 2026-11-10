@@ -1,7 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Picks the ClientRig that matches a character (R6 or R15), or nil without a Humanoid. The
--- rest of the client only talks to the ClientRig interface and never checks the rig type.
+--[[
+    Picks the ClientRig for a character, nil without a Humanoid
+    The rest of the client only uses the ClientRig interface
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Rig = require(ReplicatedStorage:WaitForChild("WeaponSystem"):WaitForChild("Rig"))

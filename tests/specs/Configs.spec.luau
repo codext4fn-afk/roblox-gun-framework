@@ -1,8 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Checks every weapon in src/shared/Configs: it validates, has no unknown keys, and still has
--- the numbers it shipped with. Adding a config without adding it to SHIPPED fails the first test
--- on purpose, so there's a moment to look at the new numbers.
+--[[
+    Every weapon config validates, has no unknown keys and keeps its shipped numbers
+    A new config has to be added to SHIPPED, on purpose, so the numbers get a look
+]]
 local fs = require("@lune/fs")
 
 type Expected = {

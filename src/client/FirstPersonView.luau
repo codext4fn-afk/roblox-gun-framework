@@ -1,10 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Shows the arms and gun in first person, Roblox hides the whole character otherwise.
--- WeaponController enables it per equipped gun and calls Update every frame. The lists of
--- parts to show and hide are cached and only rebuilt when something is added to or removed
--- from the character, so the per frame cost is just setting a property on each cached part.
+--[[
+    Shows the arms and gun in first person, Roblox hides the whole character otherwise
+    The part lists are cached and only rebuilt when the character changes, so each frame just sets a property
+]]
 
 local FirstPersonView = {}
 

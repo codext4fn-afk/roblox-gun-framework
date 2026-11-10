@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Used by WeaponRegistry when it loads weapon modules: Merge lays a weapon's overrides
--- over Defaults and UnknownKeys warns about typos. It works on plain nested tables and
--- doesn't know about WeaponConfig itself.
+--[[
+    Used by WeaponRegistry: Merge lays a weapon's overrides over Defaults, UnknownKeys warns about typos
+]]
 
 local ConfigMerge = {}
 

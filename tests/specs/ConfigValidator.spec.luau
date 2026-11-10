@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Each test breaks one rule of the config validator. The server trusts configs, so these are
--- the cases that would otherwise show up as a crash or a wrong value in the middle of a match
--- (zero fire interval, fractional pellets, NaN) and not at load time.
+--[[
+    Each test breaks one config rule, these are the cases that would otherwise show up mid match
+]]
 return function(test, expect, load)
 	local ConfigMerge = load("shared/ConfigMerge")
 	local ConfigValidator = load("shared/ConfigValidator")

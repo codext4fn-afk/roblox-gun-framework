@@ -1,11 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Plays other players' shots and reloads, the server never sends you your own
--- (WeaponService skips the shooter when it picks who gets ReplicateShot, because the shooter
--- already played it locally). The payload comes from the server so it's trusted for what
--- happened, but I still type check it since a remote can carry anything. Positions in a shot
--- are the server's own raycast results.
+--[[
+    Plays other players' shots and reloads
+    The server never sends you your own, it skips the shooter
+    The payload is type checked anyway, positions are the server's own raycast results
+]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

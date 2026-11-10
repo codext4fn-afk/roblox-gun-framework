@@ -1,9 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Thin wrappers so server rays all use the same Exclude filter setup. direction has to be
--- unit length, range does the scaling, so callers must pass normalised directions (the
--- server gets them from ShotValidator.FilterDirections).
+--[[
+    Wrappers so server rays share one Exclude filter setup
+    direction has to be unit length since range does the scaling
+]]
 
 local Raycast = {}
 

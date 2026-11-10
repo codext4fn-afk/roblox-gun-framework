@@ -1,13 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Load time sanity checks for merged weapon configs, run by WeaponRegistry on the config
--- after Defaults were merged in, so every key should exist. It returns every problem at
--- once so a broken file can be fixed in one pass.
--- Most of this is here for the server: WeaponService trusts the config, so a bad
--- FireInterval would hit the ShotClock assert in the middle of a match, and a fractional
--- Pellets or MagSize would break the pellet count check and ammo. Failing at load means
--- the weapon just doesn't register.
+--[[
+    Load time checks for merged weapon configs, returns every problem at once
+    The server trusts configs, so a bad FireInterval or a fractional Pellets would break mid match
+    Failing at load just means the weapon doesn't register
+]]
 
 local ConfigValidator = {}
 

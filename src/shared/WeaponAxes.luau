@@ -1,8 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Finds the handle, attachments and joints on a gun model. Models aren't all built facing
--- the same way, so nothing here assumes a direction, the barrel axis is worked out from
--- where the Muzzle attachment sits. Used by WeaponScaler on the server among others. Everything can return nil when a model is missing a piece, callers have to cope.
+--[[
+    Finds the handle, attachments and joints on a gun model
+    Models face different ways, so the barrel direction comes from the Muzzle attachment
+    Everything can return nil, callers have to cope
+]]
 local AngleMath = require(script.Parent.AngleMath)
 
 local WeaponAxes = {}

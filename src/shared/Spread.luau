@@ -1,9 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Spread math for the client's shot pattern and crosshair. The random source is passed in
--- as nextNumber, this module never calls math.random itself. The server doesn't use any
--- of it to re-roll shots, ShotValidator only checks that pellets are inside the cone.
+--[[
+    Spread math for the shot pattern and crosshair, the random source comes from the caller
+    The server doesn't re-roll, ShotValidator only checks the cone
+]]
 
 local Spread = {}
 

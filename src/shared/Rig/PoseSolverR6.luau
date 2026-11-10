@@ -1,9 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Poses an R6 character's neck and both shoulders from the pose table, so the arms can
--- point where the player aims. Same module on the server and the client, JointLayer
--- decides how the offset is written. It expects Torso with Neck, Right Shoulder and Left
--- Shoulder motors and skips whichever one is missing.
+--[[
+    Poses an R6 neck and shoulders from the pose table so the arms point where the player aims
+    Same module on server and client, JointLayer decides how it's written
+    Skips whichever joint is missing
+]]
 local RunService = game:GetService("RunService")
 
 local JointLayer = require(script.Parent.JointLayer)

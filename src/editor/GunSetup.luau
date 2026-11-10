@@ -1,14 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Command bar helpers for rigging gun models
--- require(game.ServerStorage.WeaponEditor.GunSetup).Build(workspace.MyGun)
---
--- Edit time only, nothing here runs in a live game. It turns a loose model into a Tool the rest of
--- the system can use: one Handle, parts welded to it, and a GunJoint Motor6D on the parts that
--- move (bolt and mag, named by the weapon's config). Mechanics treats a GunJoint's C0 as the
--- rest position, so the whole offset has to live in C0. It trusts the config in WeaponRegistry
--- to know which parts those are, which means the config has to exist before Build is run.
+--[[
+    Command bar helpers for rigging gun models
+    require(game.ServerStorage.WeaponEditor.GunSetup).Build(workspace.MyGun)
+    Edit time only: one Handle, parts welded to it and a GunJoint on the bolt and mag parts named by the config
+    Mechanics treats the GunJoint C0 as the rest position, so the whole offset lives in C0
+]]
 -- TODO(me): explain why Scale exists here as well as WeaponScaler on the server, I can't tell if both are meant to be used
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
@@ -107,7 +105,7 @@ local function hasAttachment(parent: Instance?, name: string, recursive: boolean
 	return item ~= nil and item:IsA("Attachment")
 end
 
--- Safe to run again: old GunWeld and GunJoint objects are removed before new ones are made.
+-- Safe to run again: old GunWeld and GunJoint objects are removed before new ones are made
 -- Handle is the given part, else the existing one, else the biggest part, which is only a guess
 function GunSetup.Build(tool: Tool, handlePart: BasePart?): BasePart
 	assert(typeof(tool) == "Instance" and tool:IsA("Tool"), "Pass a Tool")

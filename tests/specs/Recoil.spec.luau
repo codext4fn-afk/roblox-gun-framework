@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Recoil decay and the sway spring. The frame-rate independence test is the one that matters,
--- it's what stops recovery from being faster on a high refresh screen, and the long frame
--- test is the reason Spring uses substeps.
+--[[
+    Recoil decay and the sway spring, frame rate independence is the test that matters
+]]
 local PARAMS = { recovery = 14, sideways = 0.25, shakeRecovery = 10, shakeMax = 3 }
 
 return function(test, expect, load)

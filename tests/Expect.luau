@@ -1,10 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Tiny assertion helper for the specs, expect(value).toBe(...) style. Failures raise an error
--- and tests/run.luau catches it per test, so one failure doesn't stop the rest. toContain
--- does a plain substring match when both sides are strings, which is how the validator specs
--- match an error path like "Magazine.Drop" inside a full error message.
+--[[
+    Tiny assertion helper for the specs
+    toContain does a substring match on strings, which is how the validator specs match an error path
+]]
 
 export type Expectation = {
 	toBe: (expected: any) -> (),

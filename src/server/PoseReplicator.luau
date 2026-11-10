@@ -1,11 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Poses armed characters on the server from the AimPitch and Aiming attributes.
--- It owns the per-character pose state and nothing else. It trusts that AimPitch was
--- already clamped by WeaponService.onAimPitch and that Aiming is only written by
--- WeaponService, but it still type checks AimPitch because attributes are loose.
--- WeaponService calls Start and Stop as tools are equipped and unequipped.
+--[[
+    Poses armed characters on the server from the AimPitch and Aiming attributes
+    WeaponService calls Start and Stop on equip and unequip
+    AimPitch was already clamped upstream, only its type is checked here
+]]
 -- TODO(me): explain why the server poses characters at all when the client has AimPose, I can't tell from the code
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,7 +28,7 @@ local posed: { [Model]: Posed } = {}
 local connection: RBXScriptConnection? = nil
 
 local function step(deltaTime: number)
-	-- pitch only arrives in steps (the limiter caps it at 30 a second) so I ease toward it.
+	-- pitch only arrives in steps (the limiter caps it at 30 a second) so I ease toward it
 	-- ExpBlend takes deltaTime so the smoothing feels the same at any server frame rate
 	local blend = AngleMath.ExpBlend(deltaTime, Settings.Server.PoseSmoothing)
 	for character, entry in posed do

@@ -1,12 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Argument checks for the Fire remote. Every parameter starts as `unknown` because an
--- exploiter can send anything over a RemoteEvent, including NaN, inf, a table with hash
--- keys mixed in, or ten thousand pellets. This module only looks at values, it never
--- touches the world. WeaponService calls it before anything is spent or changed, and
--- DamageResolver relies on what comes out being finite and unit length.
--- Rejection tells you why, but onFire only checks that it's non-nil and drops the shot.
+--[[
+    Argument checks for the Fire remote, everything arrives as unknown because an exploiter can send anything
+    Only looks at values, never the world
+    DamageResolver relies on what comes out being finite and unit length
+]]
 
 local ShotValidator = {}
 

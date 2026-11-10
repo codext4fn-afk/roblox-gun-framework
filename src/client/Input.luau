@@ -1,9 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- Turns key, mouse, gamepad and touch input into the four gun actions (see Settings.Controls
--- and Settings.Touch). WeaponController binds it on equip and unbinds on unequip, so none
--- of these actions exist while no gun is held. Handlers only get a pressed or released
--- bool, nothing else knows which device was used.
+--[[
+    Turns key, mouse, gamepad and touch input into the four gun actions
+    Bound on equip and unbound on unequip
+    Handlers only get pressed or released, they don't know which device it was
+]]
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")

@@ -1,13 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Procedural arm motion for every armed character we can see: aim pitch, bob, sway and kick
--- Local pitch comes from the camera, everyone else uses the replicated attributes
---
--- It owns one AimState per armed character and hands it to that character's ClientRig
--- (Compose) every frame. It also sends the local player's pitch to the server, which is where
--- the AimPitch attribute everyone else reads comes from. WeaponController calls Kick, Align
--- and SetLocalAim on it, and it reads Camera for the local view.
+--[[
+    Procedural arm motion for every armed character we can see: aim pitch, bob, sway and kick
+    Local pitch comes from the camera, everyone else uses the replicated attributes
+    Owns one AimState per character and feeds it to the ClientRig every frame, and sends the local pitch to the server
+]]
 -- TODO(me): explain how this client posing of remote characters fits with PoseReplicator on the server, both pose them
 
 local Players = game:GetService("Players")
@@ -41,7 +39,7 @@ local MAX_DELTA = 0.1 -- clamp so a lag spike doesn't launch the springs
 -- replicated pitch arrives in steps, this eases remote characters toward it
 local REMOTE_SMOOTHING = 15
 -- Send pitch max 15 times a second and only if it moved, heartbeat resends it anyway. The
--- server limit for AimPitch is 30 a second, so a normal client never runs into it.
+-- server limit for AimPitch is 30 a second, so a normal client never runs into it
 -- TODO(me): explain why the heartbeat resend is needed
 local SEND_INTERVAL = 1 / 15
 local SEND_THRESHOLD = math.rad(0.5)

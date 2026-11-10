@@ -1,13 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Loads src modules under Lune by faking script and require
---
--- The modules expect Roblox's `script` and `require(script.Parent.X)`, so each one gets a
--- fake `script` that just tracks a file path, and `require` loads whatever path it points to.
--- Only the math globals in GLOBALS exist, there's no game, workspace or Instance, so a module
--- that calls game:GetService can't be loaded here. That's why only the pure modules (validators,
--- limiters, math) have specs.
+--[[
+    Loads src modules under Lune by faking script and require
+    Only the math globals exist, so modules that touch game or Instance can't load here, that's why only the pure ones have specs
+]]
 
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")

@@ -1,10 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
--- The single lookup from a Tool to its WeaponConfig, used by the server and the client.
--- Every module under Configs is merged over Defaults, validated and stored by module name
--- when this module is first required. A broken config is skipped with a warning so the other
--- weapons still load. GetConfig takes `unknown` on purpose, the server passes it whatever
--- a remote sent and gets nil for anything that isn't a configured Tool.
+--[[
+    Lookup from a Tool to its WeaponConfig, used by server and client
+    Configs are merged over Defaults, validated and stored by module name on first require, a broken one is skipped with a warning
+    GetConfig takes unknown because the server passes it whatever a remote sent
+]]
 local ConfigMerge = require(script.Parent.ConfigMerge)
 local ConfigValidator = require(script.Parent.ConfigValidator)
 local Defaults = require(script.Parent.Defaults)

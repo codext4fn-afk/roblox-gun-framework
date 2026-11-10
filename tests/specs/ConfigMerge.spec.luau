@@ -1,8 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Merge must never share a nested table with Defaults (one weapon's edit would change every
--- weapon), and UnknownKeys has to report full paths so a typo like Recoil.Kik can be found.
+--[[
+    Merge must never share a nested table with Defaults, and UnknownKeys must report full paths
+]]
 return function(test, expect, load)
 	local ConfigMerge = load("shared/ConfigMerge")
 

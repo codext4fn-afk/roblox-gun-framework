@@ -1,8 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Small number and angle helpers shared by the server and client, nothing in here touches
--- instances. Angles are radians everywhere.
+--[[
+    Small angle and number helpers shared by server and client, angles are radians
+]]
 
 local AngleMath = {}
 

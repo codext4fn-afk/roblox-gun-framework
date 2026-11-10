@@ -1,12 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Sits on top of the default camera: FOV, sensitivity, shoulder offset, body rotation, recoil
--- and scope snap. It doesn't replace the default camera, it runs after it each frame and
--- edits what it produced, so collisions and zoom limits still come from Roblox. It owns the
--- aim, zoom and first person blend values, and WeaponController tells it when they change
--- (Enable, SetAiming, SetZoom). Other modules read the results through the Get functions.
--- Render order: camera (+1), AimPose (+3), scope (+4), WeaponController (+5).
+--[[
+    Sits on top of the default camera: FOV, sensitivity, shoulder, body rotation, recoil and scope snap
+    Runs after the default camera each frame, so collisions still come from Roblox
+    Render order: camera +1, AimPose +3, scope +4, WeaponController +5
+]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -129,7 +128,7 @@ local function updateShoulder(humanoid: Humanoid, blend: number)
 	humanoid.CameraOffset = humanoid.CameraOffset:Lerp(target, blend)
 end
 
--- While aiming the character faces where the camera looks, so the gun points at the crosshair.
+-- While aiming the character faces where the camera looks, so the gun points at the crosshair
 -- Writing root.CFrame is fine here since the client owns its own character's physics
 local function updateBodyRotation(camera: Camera, humanoid: Humanoid, root: BasePart)
 	if aiming then

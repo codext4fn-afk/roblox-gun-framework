@@ -1,11 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Per-player minimum gap between requests of the same kind, used for the cheap remotes
--- (Reload, SetAiming, AimPitch). Fire does not go through here, ShotClock handles that
--- because it needs burst credit. I trust the caller to pass os.clock() as `now` so this
--- module never touches the clock itself. WeaponService owns the instance and has to call
--- Forget when a player leaves.
+--[[
+    Per player minimum gap between requests of the same kind, for Reload, SetAiming and AimPitch
+    Fire doesn't go through here, ShotClock handles it
+    The caller passes os.clock() and calls Forget when a player leaves
+]]
 
 local RequestLimiter = {}
 RequestLimiter.__index = RequestLimiter

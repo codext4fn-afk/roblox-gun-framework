@@ -1,14 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Tracers, muzzle flash, impacts, bullet holes, casings and sounds
--- Everything is pooled so full auto doesn't spam Instance.new
---
--- Purely cosmetic and local to each client, none of it is seen by the server and none of it
--- may affect gameplay, so every effect part has CanQuery off and shots never hit them. It
--- gets calls from WeaponController (own shots) and RemoteWeapons (other players' shots) and
--- trusts both to pass real points. Hits are hitscan, the tracer only imitates a bullet in
--- flight, and the impact is played when that tracer arrives and not when the shot was fired.
+--[[
+    Tracers, muzzle flash, impacts, bullet holes, casings and sounds
+    Everything is pooled so full auto doesn't spam Instance.new
+    Cosmetic and local only, effect parts have CanQuery off so they never block shots
+    The tracer is just visual, the hit was already resolved and the impact plays when it arrives
+]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

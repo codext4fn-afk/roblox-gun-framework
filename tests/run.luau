@@ -1,12 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- lune run tests/run.luau
---
--- Runs every tests/specs/*.spec.luau in name order. A spec returns function(test, expect, load),
--- `load` takes a path under src/ and goes through Loader. Each test runs in a pcall so a failure
--- is recorded and the rest still run, and the process exits with 1 if anything failed, so CI
--- can fail on it.
+--[[
+    lune run tests/run.luau
+    Runs every spec in tests/specs, a failing test is caught so the rest still run
+    Exits with 1 if anything failed so CI can fail on it
+]]
 
 local fs = require("@lune/fs")
 local process = require("@lune/process")

@@ -1,14 +1,11 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Bolt and mag movement on the gun, all client side through GunJoint C0s
---
--- Purely cosmetic, runs for the local player and for other players (RemoteWeapons goes through
--- the rigs). Parts move by changing the C0 of a Motor6D called GunJoint, so the first time I
--- see a joint I remember its resting C0 and Part0 in jointBases, and Cancel puts them back.
--- A reload is a few steps (Out, Drop, Grab, In) that either fire off animation markers or
--- run on timers from fractions of ReloadTime. I expect each step to be safe to abort, any of
--- them can be cancelled by an unequip or a character reset.
+--[[
+    Bolt and mag movement on the gun through GunJoint C0s, cosmetic only
+    The first time a joint is seen its rest C0 and Part0 are saved so Cancel can restore them
+    Reload steps run off animation markers or timers from the Magazine fractions, and any step can be aborted
+]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

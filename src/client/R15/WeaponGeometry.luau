@@ -1,12 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Reads AimPoint, SupportGrip and the mag well off a gun model, with fallbacks if they're missing
--- Everything is worked out in the Handle's space, and the barrel axis comes from
--- WeaponAxes.ForwardAxis because models aren't all built facing the same way. WeaponRig is the
--- only user, it needs eyeFrame (where the eye goes to look down the sights) and supportFrame
--- (where the off hand goes). Results are cached per tool, so a model edited while equipped
--- won't be re-read.
+--[[
+    Reads AimPoint, SupportGrip and the mag well off a gun model, with fallbacks if they're missing
+    Works in the Handle's space and is cached per tool, WeaponRig is the only user
+]]
 -- TODO(me): explain where SUPPORT_ALONG, SUPPORT_BELOW_BORE and the FALLBACK_EYE values come from
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

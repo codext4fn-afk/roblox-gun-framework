@@ -1,10 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- The server side rate limits. ShotClock is the fire rate cap (and what stops a fast autofire
--- exploit), so there are tests in both directions: sustained fire can't beat the configured rate,
--- and an honest shooter at exactly that rate is never refused. RequestLimiter covers the cheap
--- remotes.
+--[[
+    Server rate limits: sustained fire can't beat the configured rate and an honest shooter is never refused
+]]
 return function(test, expect, load)
 	local RequestLimiter = load("server/RequestLimiter")
 	local ShotClock = load("server/ShotClock")
