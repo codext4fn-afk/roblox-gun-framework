@@ -1,7 +1,14 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Local player's gun: input, aiming, firing, reloading and the per frame update
+-- Local player's gun: input, aiming, firing, reloading and the per frame update.
+--
+-- Everything here is prediction. Shots, tracers, hitmarkers and the reload animation play
+-- right away for responsiveness, but the server decides what really happened, so the
+-- ammo count and reload state shown on the HUD come back from the Tool attributes it sets.
+-- The server refuses Fire unless its Aiming attribute is on, which is why SetAiming has to
+-- be sent whenever `aiming` changes here. I expect Camera, AimPose, Effects, Hud and the
+-- Rigs table to do the presentation, and this module only decides when to call them.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -36,11 +43,13 @@ local player = Players.LocalPlayer
 local WeaponController = {}
 
 local FRAME_BIND_NAME = "GunClientFrame"
-local FRAME_PRIORITY = Enum.RenderPriority.Camera.Value + 5 -- after Camera (+1), AimPose (+3) and the scope (+4)
+-- runs after Camera (+1), AimPose (+3) and the scope (+4) so it reads this frame's results
+local FRAME_PRIORITY = Enum.RenderPriority.Camera.Value + 5
 local ALIGN_MIN_DISTANCE = 2
 local POSE_FADE = 0.15
 
--- shared with other scripts, a sprint system can set Sprinting or MovementManaged
+-- Shared with other scripts, a sprint system can set Sprinting or MovementManaged. Sprinting
+-- stops firing here, and MovementManaged tells me not to touch WalkSpeed
 local ADS_ATTRIBUTE = "AimingDownSights"
 local SPRINTING_ATTRIBUTE = "Sprinting"
 local MOVEMENT_MANAGED_ATTRIBUTE = "MovementManaged"
@@ -76,7 +85,8 @@ local function getCurrentSpread(equipped: ClientTypes.Equipped): number
 	return Spread.Current(equipped.config.HipSpread, equipped.config.AimSpread, Camera.GetAimAlpha())
 end
 
--- start the ray at the head so stuff behind you in third person doesn't get picked
+-- The camera ray starts behind the character in third person, so I move the start up to the
+-- head's depth along the ray, otherwise a wall behind you would be the thing you aim at
 local function getAimTarget(equipped: ClientTypes.Equipped): Vector3
 	local origin, direction = Camera.GetAimRay(Input.UsesScreenCenter())
 	local head = equipped.character:FindFirstChild("Head")
@@ -102,7 +112,9 @@ local function updatePoseAnimations(equipped: ClientTypes.Equipped, isAiming: bo
 	end
 end
 
--- aiming = allowed to shoot, zooming = aim button held
+-- aiming = allowed to shoot, zooming = aim button held. First person counts as aiming without
+-- zooming. This is the only place SetAiming is sent, and the server needs it before it
+-- accepts a Fire
 local function setAiming(isAiming: boolean)
 	local equipped = current
 	if not equipped or equipped.aiming == isAiming then
@@ -137,7 +149,8 @@ local function refreshAiming()
 	end
 end
 
--- in first person the barrel and crosshair don't line up, bend the arms to close the gap
+-- In first person the barrel and crosshair don't line up, bend the arms to close the gap
+-- (this is purely visual, the shot goes along the aim ray from the head regardless)
 local function alignGunToCrosshair(equipped: ClientTypes.Equipped, deltaTime: number)
 	local torso = equipped.character:FindFirstChild(equipped.rig.AlignTorso)
 	local gunOrigin, gunDirection = nil, nil
@@ -151,6 +164,7 @@ local function alignGunToCrosshair(equipped: ClientTypes.Equipped, deltaTime: nu
 	local screenOrigin, screenDirection = Camera.GetAimRay(true)
 	local target = Raycast.EndPoint(screenOrigin, screenDirection, equipped.config.Range, equipped.params)
 	local toTarget = target - gunOrigin
+	-- too close and the angle between gun and target swings wildly, so hold the last value
 	if toTarget.Magnitude < ALIGN_MIN_DISTANCE then
 		return
 	end
@@ -169,6 +183,8 @@ local function requestReload()
 		return
 	end
 	local character, tool, config = equipped.character, equipped.tool, equipped.config
+	-- the server runs the real timer and drops duplicates (rate limit and its own Reloading
+	-- flag), everything below is just the local animation starting without waiting for it
 	Remotes.Reload:FireServer(tool)
 	Effects.PlaySound(tool, "Reload")
 	equipped.rig.Reload(character, tool, config, {
@@ -184,7 +200,9 @@ local function requestReload()
 	})
 end
 
--- cosmetic only, the server decides what actually got hit
+-- Cosmetic only. This recasts the pellets locally to place tracers and decide on a
+-- hitmarker, so it can disagree with the server's own cast (lag, moving targets). The
+-- server decides what got hit, and other players see its positions via ReplicateShot
 local function showShot(equipped: ClientTypes.Equipped, origin: Vector3, aimDirection: Vector3, directions: { Vector3 })
 	local tool, config = equipped.tool, equipped.config
 	local muzzle = Effects.GetMuzzlePosition(tool) or origin
@@ -217,7 +235,9 @@ local function showShot(equipped: ClientTypes.Equipped, origin: Vector3, aimDire
 	end
 end
 
--- same checks as the server so we don't predict shots it'll throw out
+-- Same checks as the server so we don't predict shots it'll throw out. The interval check is
+-- a bit stricter than the server's ShotClock, which allows a little burst for jitter, so the
+-- client never fires faster than the server would accept
 local function fire(equipped: ClientTypes.Equipped)
 	local tool, config = equipped.tool, equipped.config
 	if not equipped.aiming then
@@ -247,11 +267,14 @@ local function fire(equipped: ClientTypes.Equipped)
 		equipped.triggerHeld = false
 	end
 
-	-- shoot from the head, the server checks the origin against it
+	-- shoot from the head, the server checks the origin against it (OriginWithinReach) and
+	-- does a line of sight check from the head to the origin
 	local origin = head.Position
 	local toTarget = getAimTarget(equipped) - origin
 	local _, centerDirection = Camera.GetAimRay(true)
 	local aimDirection = if toTarget.Magnitude > 1 then toTarget.Unit else centerDirection
+	-- the pattern uses the current spread (narrower while zoomed), the server only accepts
+	-- pellets inside the hip spread plus a tolerance
 	local directions = Spread.Pattern(aimDirection, getCurrentSpread(equipped), config.Pellets, nextNumber)
 
 	Remotes.Fire:FireServer(tool, origin, aimDirection, directions)
@@ -259,7 +282,8 @@ local function fire(equipped: ClientTypes.Equipped)
 end
 
 local inputHandlers: Input.Handlers = {
-	-- just latch the trigger, onFrame does the shooting
+	-- just latch the trigger, onFrame does the shooting so the rate is tied to frames and
+	-- held fire for automatic modes doesn't need its own loop
 	Fire = function(isPressed: boolean)
 		local equipped = current
 		if equipped then
@@ -282,6 +306,8 @@ local inputHandlers: Input.Handlers = {
 	end,
 }
 
+-- Order matters: input goes first so nothing fires mid teardown, and the aim flags are
+-- cleared through setZoom and setAiming so the server gets its SetAiming false too
 local function unequip()
 	local equipped = current
 	if not equipped then
@@ -316,6 +342,7 @@ local function equip(tool: Tool, config: Types.WeaponConfig)
 	if not (character and character:IsA("Model") and humanoid and rig) then
 		return
 	end
+	-- tear down the previous gun first so only one set of connections and bindings exists
 	unequip()
 
 	local equipped: ClientTypes.Equipped = {
@@ -356,6 +383,7 @@ local function onFrame(deltaTime: number)
 	if not equipped then
 		return
 	end
+	-- checked every frame because first person can change without any input (camera mode)
 	refreshAiming()
 	alignGunToCrosshair(equipped, deltaTime)
 	if equipped.triggerHeld then
@@ -376,7 +404,8 @@ local function onFrame(deltaTime: number)
 	)
 end
 
--- watch the character instead of Tool.Equipped so tools parented by other scripts work too
+-- Watch the character instead of Tool.Equipped so tools parented by other scripts work too.
+-- This matches how the server decides a gun is equipped (Tool.Parent == character)
 local function onCharacter(character: Model)
 	unequip()
 	character.ChildAdded:Connect(function(child)
