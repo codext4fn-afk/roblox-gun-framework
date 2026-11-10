@@ -3,6 +3,13 @@
 
 -- Command bar helpers for rigging gun models
 -- require(game.ServerStorage.WeaponEditor.GunSetup).Build(workspace.MyGun)
+--
+-- Edit time only, nothing here runs in a live game. It turns a loose model into a Tool the rest of
+-- the system can use: one Handle, parts welded to it, and a GunJoint Motor6D on the parts that
+-- move (bolt and mag, named by the weapon's config). Mechanics treats a GunJoint's C0 as the
+-- rest position, so the whole offset has to live in C0. It trusts the config in WeaponRegistry
+-- to know which parts those are, which means the config has to exist before Build is run.
+-- TODO(me): explain why Scale exists here as well as WeaponScaler on the server, I can't tell if both are meant to be used
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -21,13 +28,15 @@ export type NudgeOptions = {
 	roll: number?,
 }
 
--- only ever removes joints we made
+-- Only ever removes joints we made, matched by name, so a weld or joint that came with the
+-- model isn't deleted when Build or Scale reruns
 local JOINT_NAMES: { [string]: boolean } = {
 	GunWeld = true,
 	GunJoint = true,
 }
 local SOUND_NAMES = { "Fire", "Reload", "Empty", "MagOut", "MagIn" }
 
+-- pcall so a failed waypoint never stops the build
 local function waypoint(name: string)
 	pcall(ChangeHistoryService.SetWaypoint, ChangeHistoryService, name)
 end
@@ -98,6 +107,8 @@ local function hasAttachment(parent: Instance?, name: string, recursive: boolean
 	return item ~= nil and item:IsA("Attachment")
 end
 
+-- Safe to run again: old GunWeld and GunJoint objects are removed before new ones are made.
+-- Handle is the given part, else the existing one, else the biggest part, which is only a guess
 function GunSetup.Build(tool: Tool, handlePart: BasePart?): BasePart
 	assert(typeof(tool) == "Instance" and tool:IsA("Tool"), "Pass a Tool")
 	local parts = getParts(tool)
@@ -134,6 +145,8 @@ function GunSetup.Build(tool: Tool, handlePart: BasePart?): BasePart
 	return handle
 end
 
+-- Prints a checklist. MISSING ones break the gun, OPTIONAL ones just turn off a feature or
+-- fall back to an estimate (see WeaponGeometry and Effects)
 function GunSetup.Validate(tool: Tool)
 	assert(typeof(tool) == "Instance" and tool:IsA("Tool"), "Pass a Tool")
 	local config = WeaponRegistry.GetConfig(tool)
@@ -186,6 +199,8 @@ function GunSetup.Validate(tool: Tool)
 	print(`GunSetup.Validate: {tool.Name}\n{table.concat(lines, "\n")}`)
 end
 
+-- Resizes everything around the Handle, then rebuilds the joints, since scaling with welds on
+-- would snap parts back (same problem WeaponScaler solves at runtime)
 function GunSetup.Scale(tool: Tool, factor: number)
 	local handle = tool:FindFirstChild("Handle")
 	assert(handle and handle:IsA("BasePart"), "Run GunSetup.Build first")
@@ -232,7 +247,8 @@ function GunSetup.Nudge(tool: Tool, options: NudgeOptions?)
 	local rotation = CFrame.Angles(0, math.rad(-(settings.yaw or 0)), 0)
 		* CFrame.Angles(math.rad(settings.pitch or 0), 0, 0)
 		* CFrame.Angles(0, 0, math.rad(-(settings.roll or 0)))
-	-- Grip is the hand relative to the handle so it's inverted
+	-- Grip is the hand relative to the handle so it's inverted: moving the gun one way means
+	-- moving the grip the other way
 	tool.Grip = tool.Grip * rotation:Inverse() * CFrame.new(-offset)
 	waypoint("GunSetup.Nudge")
 end
