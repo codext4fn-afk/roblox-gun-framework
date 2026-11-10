@@ -27,8 +27,8 @@ function Spring.Step(
 	deltaTime: number,
 	params: Params
 ): (number, number)
-	-- Fixed substeps so it behaves the same at any framerate. One big step with this much
-	-- stiffness would overshoot wildly on a slow frame, so the step size is capped
+	-- fixed substeps make it behave the same at any framerate
+	-- one big step with this much stiffness would overshoot on a slow frame, so the step size is capped
 	local steps = math.max(1, math.ceil(deltaTime / params.step))
 	local step = deltaTime / steps
 	for _ = 1, steps do

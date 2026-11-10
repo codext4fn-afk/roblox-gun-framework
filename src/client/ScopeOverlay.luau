@@ -18,8 +18,8 @@ local LENS_SIZE = 0.9
 local LINE_THICKNESS = 2
 local CENTER_GAP = 0.04
 local TINT = Color3.new(0, 0, 0)
--- a huge stroke around a round (corner radius 50%) frame works as the black mask, so the
--- lens is a hole in it and no image asset is needed
+-- a huge stroke around a round frame (corner radius 50%) works as the black mask
+-- the lens is the hole in it, so no image asset is needed
 local STROKE_THICKNESS = 4000
 local DISPLAY_ORDER = 5
 
@@ -105,8 +105,8 @@ function ScopeOverlay.Update(tool: Tool, config: Types.WeaponConfig, zoomAlpha: 
 		hiddenTool = tool
 	end
 	screen.Enabled = true
-	-- FirstPersonView sets the tool visible again every frame so I have to keep hiding it here
-	-- WeaponController calls this after FirstPersonView.Update in the same frame, so this wins
+	-- FirstPersonView shows the tool again every frame, so it has to be hidden again here
+	-- WeaponController calls this after FirstPersonView.Update in the same frame, so this one wins
 	setToolHidden(tool, true)
 end
 

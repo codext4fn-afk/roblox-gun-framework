@@ -89,8 +89,8 @@ function ConfigValidator.Validate(config: { [string]: any }): { string }
 	local magazine = config.Magazine
 	check(type(magazine) == "table", "Magazine must be a table")
 	if type(magazine) == "table" then
-		-- each step has to come after the one before it, previous carries the last good value
-		-- so one bad number doesn't make every later step fail too
+		-- each step has to come after the one before it
+		-- previous keeps the last good value, so one bad number does not make every later step fail too
 		local previous = 0
 		for _, step in MAGAZINE_STEPS do
 			local value = magazine[step]

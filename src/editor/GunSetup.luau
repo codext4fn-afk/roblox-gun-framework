@@ -26,8 +26,8 @@ export type NudgeOptions = {
 	roll: number?,
 }
 
--- Only ever removes joints we made, matched by name, so a weld or joint that came with the
--- model isn't deleted when Build or Scale reruns
+-- this only removes joints made by this script, matched by name
+-- that way a weld or joint that came with the model is not deleted when Build or Scale runs again
 local JOINT_NAMES: { [string]: boolean } = {
 	GunWeld = true,
 	GunJoint = true,
@@ -105,8 +105,8 @@ local function hasAttachment(parent: Instance?, name: string, recursive: boolean
 	return item ~= nil and item:IsA("Attachment")
 end
 
--- Safe to run again: old GunWeld and GunJoint objects are removed before new ones are made
--- Handle is the given part, else the existing one, else the biggest part, which is only a guess
+-- it is safe to run again, since the old GunWeld and GunJoint objects are removed before new ones are made
+-- the Handle is the given part, else the existing one, else the biggest part, and that last one is only a guess
 function GunSetup.Build(tool: Tool, handlePart: BasePart?): BasePart
 	assert(typeof(tool) == "Instance" and tool:IsA("Tool"), "Pass a Tool")
 	local parts = getParts(tool)
@@ -143,8 +143,8 @@ function GunSetup.Build(tool: Tool, handlePart: BasePart?): BasePart
 	return handle
 end
 
--- Prints a checklist. MISSING ones break the gun, OPTIONAL ones just turn off a feature or
--- fall back to an estimate (see WeaponGeometry and Effects)
+-- this prints a checklist
+-- MISSING ones break the gun, and OPTIONAL ones only turn off a feature or fall back to an estimate (see WeaponGeometry and Effects)
 function GunSetup.Validate(tool: Tool)
 	assert(typeof(tool) == "Instance" and tool:IsA("Tool"), "Pass a Tool")
 	local config = WeaponRegistry.GetConfig(tool)
@@ -197,8 +197,8 @@ function GunSetup.Validate(tool: Tool)
 	print(`GunSetup.Validate: {tool.Name}\n{table.concat(lines, "\n")}`)
 end
 
--- Resizes everything around the Handle, then rebuilds the joints, since scaling with welds on
--- would snap parts back (same problem WeaponScaler solves at runtime)
+-- this resizes everything around the Handle and then rebuilds the joints
+-- scaling with the welds on would snap parts back, which is the same problem WeaponScaler solves at runtime
 function GunSetup.Scale(tool: Tool, factor: number)
 	local handle = tool:FindFirstChild("Handle")
 	assert(handle and handle:IsA("BasePart"), "Run GunSetup.Build first")
@@ -245,8 +245,8 @@ function GunSetup.Nudge(tool: Tool, options: NudgeOptions?)
 	local rotation = CFrame.Angles(0, math.rad(-(settings.yaw or 0)), 0)
 		* CFrame.Angles(math.rad(settings.pitch or 0), 0, 0)
 		* CFrame.Angles(0, 0, math.rad(-(settings.roll or 0)))
-	-- Grip is the hand relative to the handle so it's inverted: moving the gun one way means
-	-- moving the grip the other way
+	-- Grip is the hand relative to the handle, so it is inverted
+	-- moving the gun one way means moving the grip the other way
 	tool.Grip = tool.Grip * rotation:Inverse() * CFrame.new(-offset)
 	waypoint("GunSetup.Nudge")
 end

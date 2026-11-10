@@ -22,9 +22,9 @@ local MATCH_EPSILON = 1e-4 -- replication drifts a little so an exact compare fa
 local transformLayers: { [Motor6D]: TransformRecord } = setmetatable({}, { __mode = "k" }) :: any
 local originalC0: { [Motor6D]: CFrame } = setmetatable({}, { __mode = "k" }) :: any
 
--- If Transform still holds what I wrote last frame, nothing animated it since (a motor with
--- no animation playing keeps its old Transform), so my offset has to be peeled back off or it
--- would stack on itself every frame. If an animation did write to it, that value is the base
+-- if Transform still holds what was written last frame, nothing animated it since, because a motor with no animation playing keeps its old Transform
+-- so the offset has to be taken back off, or it would stack on itself every frame
+-- if an animation did write to it, that value is the base
 local function getBaseTransform(motor: Motor6D, record: TransformRecord?): CFrame
 	if record and motor.Transform:FuzzyEq(record.written, MATCH_EPSILON) then
 		return record.offset:Inverse() * record.written
@@ -32,8 +32,8 @@ local function getBaseTransform(motor: Motor6D, record: TransformRecord?): CFram
 	return motor.Transform
 end
 
--- server: the Animator rewrites Transform every frame so I stack on top of it after the
--- animation step (PoseReplicator runs on PreSimulation for that reason)
+-- server: the Animator rewrites Transform every frame, so the offset is stacked on top after the animation step
+-- PoseReplicator runs on PreSimulation for that reason
 local Transform: Layer = {
 	Apply = function(motor: Motor6D, offset: CFrame)
 		local record = transformLayers[motor]
@@ -55,9 +55,9 @@ local Transform: Layer = {
 	end,
 }
 
--- client: C0 doesn't replicate and animations don't write it, so there's nothing to peel off
--- The original is remembered on first Apply and put back by Clear, which assumes nothing
--- else edits C0 on these motors in between
+-- client: C0 does not replicate and animations do not write it, so there is nothing to take off
+-- the original is saved on the first Apply and put back by Clear
+-- this assumes nothing else edits C0 on these motors in between
 local C0: Layer = {
 	Apply = function(motor: Motor6D, offset: CFrame)
 		local base = originalC0[motor]

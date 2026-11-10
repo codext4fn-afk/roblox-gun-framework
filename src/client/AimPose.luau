@@ -118,8 +118,8 @@ local function stopTracking(character: Model)
 	end
 end
 
--- Called on every tool change. Rigs with ResetOnToolChange start from fresh state for a new
--- tool, the others keep their springs and just point at the new tool
+-- called on every tool change
+-- rigs with ResetOnToolChange start with fresh state for a new tool, the others keep their springs and just point at the new tool
 local function refreshTracking(character: Model)
 	local tool = WeaponRegistry.GetEquipped(character)
 	local entry = tracked[character]
@@ -216,8 +216,8 @@ local function updateSprings(character: Model, state: ClientTypes.AimState, delt
 	local yaw = getRootYaw(character)
 	local armPitch = state.pose.pitch * state.pose.aim
 	local lastYaw, lastArmPitch = state.lastYaw, state.lastArmPitch
-	-- WrapAngle or turning across 180 reads as a full spin. The rates feed the turn and look
-	-- sway springs, so the gun lags behind when you move the camera
+	-- WrapAngle is needed, or turning across 180 reads as a full spin
+	-- the rates feed the turn and look sway springs, so the gun lags behind when the camera moves
 	local rawYawRate = if yaw and lastYaw then AngleMath.WrapAngle(yaw - lastYaw) / deltaTime else 0
 	local rawPitchRate = if lastArmPitch then (armPitch - lastArmPitch) / deltaTime else 0
 	state.lastYaw, state.lastArmPitch = yaw, armPitch
@@ -234,8 +234,8 @@ local function updateSprings(character: Model, state: ClientTypes.AimState, delt
 		Spring.Step(state.lookSway, state.lookVelocity, lookTarget, deltaTime, Spring.Sway)
 end
 
--- Only the local character is sent, and only through this one place so the throttle below
--- applies to everything
+-- only the local character is sent, and only from this one place
+-- that way the throttle below applies to everything
 local function sendLocalPitch()
 	local character = player.Character
 	local entry = character and tracked[character]

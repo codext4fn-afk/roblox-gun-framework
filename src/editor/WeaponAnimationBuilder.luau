@@ -115,8 +115,8 @@ local function sortedKeyframes(sequence: KeyframeSequence): { Keyframe }
 	return keyframes
 end
 
--- Looks up the last keyframe at or before `time` that actually sets this joint. There's no
--- interpolation, it's a step lookup, which is enough for reading rest and end poses
+-- this finds the last keyframe at or before time that sets this joint
+-- there is no interpolation, it is a step lookup, and that is enough for reading rest and end poses
 local function poseAt(sequence: KeyframeSequence, jointName: string, time: number): CFrame
 	local found = CFrame.identity
 	for _, keyframe in sortedKeyframes(sequence) do
@@ -151,8 +151,9 @@ local function getDraftFolder(rig: Types.RigName, weaponId: string): Instance
 	return folder
 end
 
--- Works out where the handle ends up on an R6 rig for a given right arm pose, so the left
--- arm targets can be put in handle space. GripR6 overrides Grip when the R6 hold is different
+-- this works out where the handle ends up on an R6 rig for a given right arm pose
+-- that way the left arm targets can be put in handle space
+-- GripR6 replaces Grip when the R6 hold is different
 local function handleFor(tool: Tool, rightArmPose: CFrame): CFrame
 	local arm = RIGHT_SHOULDER.C0 * rightArmPose * RIGHT_SHOULDER.C1:Inverse()
 	local gripR6 = tool:GetAttribute("GripR6")
@@ -205,8 +206,9 @@ local function supportPoint(tool: Tool): Vector3
 	return eye:Lerp(muzzle, 0.38) - Vector3.new(0, 0.16, 0)
 end
 
--- Key times are fractions of the reload, taken from the Magazine config, the same fractions
--- the runtime reload uses. Needs a mag with a GunJoint
+-- the key times are fractions of the reload, taken from the Magazine config
+-- they are the same fractions the runtime reload uses
+-- it needs a mag with a GunJoint
 local function buildR6Reload(tool: Tool, config: Types.WeaponConfig, shared: KeyframeSequence): KeyframeSequence
 	local magazine = config.Magazine
 	local duration = config.ReloadTime
@@ -295,8 +297,8 @@ local function buildR6BoltFeed(tool: Tool, config: Types.WeaponConfig, shared: K
 	return sequence
 end
 
--- Copies a shared clip and scales every pose toward identity by `amount`, and optionally
--- stretches it to `duration` (used so the reload clip matches ReloadTime)
+-- this copies a shared clip and scales every pose toward identity by amount
+-- it can also stretch the clip to duration, so the reload clip matches ReloadTime
 local function rescale(shared: KeyframeSequence, name: string, amount: number, duration: number?): KeyframeSequence
 	local keyframes = sortedKeyframes(shared)
 	local length = keyframes[#keyframes].Time
@@ -326,8 +328,8 @@ function WeaponAnimationBuilder.GetWeapon(weaponId: string): (Tool, Types.Weapon
 	return tool, config
 end
 
--- Only the reload is generated for R6 (BoltFeed guns get their own version), Hold and Aim
--- stay the shared ones
+-- only the reload is made for R6, and BoltFeed guns get their own version
+-- Hold and Aim stay the shared ones
 function WeaponAnimationBuilder.BuildR6(weaponId: string): Instance
 	local tool, config = WeaponAnimationBuilder.GetWeapon(weaponId)
 	local folder = getDraftFolder("R6", weaponId)

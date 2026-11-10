@@ -77,8 +77,8 @@ local R15: ClientTypes.ClientRig = {
 	end,
 	LocalFrame = function(_equipped: ClientTypes.Equipped, _isFirstPerson: boolean, _deltaTime: number) end,
 	Unequip = function(_equipped: ClientTypes.Equipped) end,
-	-- ReloadUsesAnimation lets the anim drive the arms, otherwise ReloadMotion does it. The
-	-- local player has their own track handle, for others it's found by id once it's playing
+	-- ReloadUsesAnimation lets the animation drive the arms, otherwise ReloadMotion does it
+	-- the local player has the track handle, and for other players it is found by id once it is playing
 	Reload = function(character: Model, tool: Tool, config: Types.WeaponConfig, options: ClientTypes.ReloadOptions)
 		local usesAnimation = config.Handling.ReloadUsesAnimation
 		if options.isLocal then

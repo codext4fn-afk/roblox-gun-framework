@@ -148,9 +148,9 @@ local function firstPersonEye(
 	return hipEye(camera, config, tool, geometry):Lerp(sights, smoothstep(zoom))
 end
 
--- First person only: a ray from the camera, a little longer than the gun, tells how close a
--- wall is, and the gun gets pushed toward OBSTRUCTED the nearer it is, so it doesn't poke
--- through geometry
+-- this is for first person only
+-- a ray from the camera, a little longer than the gun, shows how close a wall is
+-- the closer it is, the more the gun is pushed toward OBSTRUCTED, so it does not go through geometry
 local function measureObstruction(character: Model, view: ClientTypes.View, reach: number): number
 	local length = reach + OBSTRUCTION_MARGIN
 	local result =
@@ -226,8 +226,8 @@ end
 
 local SIDES: { ArmSolver.Side } = { "Right", "Left" }
 
--- short armed avatars can't always reach, pull the gun in. Each hand is checked in turn against
--- its max reach, and the shift from the first hand is included when checking the second
+-- short armed avatars cannot always reach, so the gun is pulled in
+-- each hand is checked in turn against its max reach, and the shift from the first hand counts when checking the second
 local function reachCorrection(
 	character: Model,
 	shoulderSpace: CFrame,
@@ -324,8 +324,9 @@ function WeaponRig.Update(
 		eye = eye:Lerp(firstPersonEye(view.camera, config, view.zoom, tool, geometry), smoothstep(rig.firstPerson))
 	end
 	local swayScale = if view then 1 + (ADS_SWAY_KEEP - 1) * smoothstep(view.zoom) else 1
-	-- Order matters from here: each offset multiplies onto the eye in eye space, so sway comes
-	-- first and the draw lerp last. Sway is reduced while zoomed so the sights stay steady
+	-- the order matters from here
+	-- each offset multiplies onto the eye in eye space, so sway comes first and the draw lerp comes last
+	-- sway is reduced while zoomed, so the sights stay steady
 	eye *= motionOffset(pose, motion, swayScale)
 	if rig.sprint > 1e-3 then
 		eye *= IDENTITY:Lerp(handling.SprintCarry, smoothstep(rig.sprint))

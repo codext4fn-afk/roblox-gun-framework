@@ -60,8 +60,7 @@ local PoseSolverR6: Types.PoseSolver = {
 		-- pitch only goes into the arms while aiming
 		local armPitch = pose.pitch * pose.aim + pose.armPitch
 		local armYaw = CFrame.Angles(0, pose.armYaw, 0)
-		-- R6 shoulders are mirrored so the left one gets flipped signs. armBack moves the arms
-		-- along the shoulder axis, which is why it's also negated for the right one
+		-- R6 shoulders are mirrored, so the left one gets flipped signs
 		if joints.rightShoulder then
 			layer.Apply(joints.rightShoulder, CFrame.new(-pose.armBack, 0, 0) * armYaw * CFrame.Angles(0, 0, armPitch))
 		end

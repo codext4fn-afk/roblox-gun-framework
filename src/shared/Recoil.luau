@@ -47,8 +47,8 @@ function Recoil.Shake(self: Recoil, degrees: number)
 end
 
 function Recoil.Step(self: Recoil, deltaTime: number): (number, number, number)
-	-- exp decay so recovery takes the same time at any framerate, a flat subtraction per
-	-- frame would recover faster on a 144hz screen than a 30fps one
+	-- exponential decay makes recovery take the same time at any framerate
+	-- a flat subtraction every frame would recover faster on a 144hz screen than at 30fps
 	local decay = math.exp(-deltaTime * self.params.recovery)
 	self.pitch *= decay
 	self.yaw *= decay

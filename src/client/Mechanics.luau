@@ -102,9 +102,9 @@ local function setVisible(part: BasePart, visible: boolean)
 	end
 end
 
--- Swap Part0 without the part jumping: C0 is recalculated so the mag stays exactly where it
--- is in the world, then the next tween moves it from there. This is how the mag goes from
--- the gun to the hand and back
+-- swaps Part0 without the part jumping
+-- C0 is recalculated so the mag stays where it is in the world, and the next tween moves it from there
+-- this is how the mag goes from the gun to the hand and back
 local function reattach(joint: Motor6D, newPart0: BasePart)
 	local part1 = joint.Part1
 	if part1 then
@@ -113,8 +113,8 @@ local function reattach(joint: Motor6D, newPart0: BasePart)
 	joint.Part0 = newPart0
 end
 
--- mag comes out away from the barrel line: take the joint's offset, remove the part along the
--- barrel axis, and what's left points from the barrel to the mag, so it slides the other way
+-- the mag comes out away from the barrel line
+-- the joint's offset has the part along the barrel axis removed, and what is left points from the barrel to the mag, so it slides the other way
 local function getInsertAxis(tool: Tool, joint: Motor6D): Vector3
 	local forward = WeaponAxes.ForwardAxis(tool)
 	local position = jointBases[joint].C0.Position
@@ -135,9 +135,9 @@ local function getHoldTarget(joint: Motor6D, part: BasePart, hand: BasePart, mag
 	return CFrame.new(palm.Position) * relative.Rotation * joint.C1
 end
 
--- The dropped mag is a clone with its joints removed, the real one stays on the gun and just
--- goes invisible (setVisible) until Grab. Collision comes on after DROP_COLLIDE_DELAY so it
--- falls clear of the gun and hand first
+-- the dropped mag is a clone with its joints removed
+-- the real one stays on the gun and only goes invisible (setVisible) until Grab
+-- collision turns on after DROP_COLLIDE_DELAY, so it falls clear of the gun and hand first
 local function dropCopy(part: BasePart, source: BasePart, lifetime: number)
 	local copy = part:Clone()
 	for _, item in copy:GetDescendants() do
@@ -185,8 +185,8 @@ local function boltCurve(cycle: BoltCycle, elapsed: number): number
 	return 1 - t * t
 end
 
--- Stepped by hand, restarting a tween every shot stutters at high rpm. There's one shared
--- PreRender connection that disconnects itself once no bolt is cycling
+-- the bolt is stepped by hand, because restarting a tween on every shot stutters at high rpm
+-- one shared PreRender connection does it, and it disconnects itself once no bolt is cycling
 local function stepBolts()
 	local now = os.clock()
 	for joint, cycle in cyclingBolts do
@@ -225,8 +225,8 @@ function Mechanics.CycleBolt(tool: Tool, config: Types.WeaponConfig)
 	end
 end
 
--- Rack depends on the reload config: BoltFeed always opens the bolt, otherwise Rack says
--- Never, Always, or Empty (only when the mag was empty, which is the `chamber` option)
+-- the rack depends on the reload config
+-- BoltFeed always opens the bolt, otherwise Rack says Never, Always, or Empty (only when the mag was empty, which is the chamber option)
 function Mechanics.RackDuringReload(tool: Tool, config: Types.WeaponConfig, wasEmpty: boolean)
 	local reload, bolt = config.Reload, config.Bolt
 	local joint = getJoint(tool, bolt.Part)
@@ -299,8 +299,8 @@ function Mechanics.Reload(
 	local base = jointBases[joint]
 	local unseated = CFrame.new(-getInsertAxis(tool, joint) * magazine.InsertDepth) * base.C0
 
-	-- every step checks this after it yields, the tool can be unequipped or the character
-	-- gone while a tween was running
+	-- every step checks this after it yields
+	-- the tool can be put away or the character can be gone while a tween was running
 	local function isActive(): boolean
 		return activeReloads[tool] == reload and tool.Parent == character and hand.Parent ~= nil
 	end

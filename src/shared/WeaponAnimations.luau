@@ -26,8 +26,8 @@ local function getDraftRoot(rig: Types.RigName): Instance?
 	return drafts and drafts:FindFirstChild(rig)
 end
 
--- drafts only register in Studio, live servers just get "" back. pcall because the register
--- call errors when it isn't allowed, and that shouldn't take the weapon down with it
+-- drafts only register in Studio, and live servers just get an empty string
+-- pcall is used because the register call errors when it is not allowed, and that should not break the weapon
 local function registerDraft(parent: Instance?, name: string): string
 	local draft = parent and parent:FindFirstChild(name)
 	if not (draft and draft:IsA("KeyframeSequence")) then

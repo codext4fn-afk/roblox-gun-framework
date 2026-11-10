@@ -22,8 +22,8 @@ local SPRINT_ENTER_SPEED = 7
 local SPRINT_EXIT_SPEED = 12
 local FIRST_PERSON_PUSH_SPEED = 12
 
--- Only if it's actually holding our Handle, so a stale or swapped grip weld from another tool
--- never gets its C1 edited
+-- this only returns the weld if it is really holding our Handle
+-- that way an old or swapped grip weld from another tool never gets its C1 edited
 local function getRightGrip(equipped: ClientTypes.Equipped): JointInstance?
 	local arm = equipped.character:FindFirstChild("Right Arm")
 	local weld = arm and arm:FindFirstChild("RightGrip")

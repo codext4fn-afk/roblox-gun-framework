@@ -38,8 +38,8 @@ local function attachmentPosition(handle: BasePart, name: string): Vector3?
 	return if attachment then attachment.Position else nil
 end
 
--- Prefers the GunJoint's C0 since that's where the mag actually sits at rest, otherwise falls
--- back to the mag part's position
+-- this prefers the GunJoint's C0, since that is where the mag sits at rest
+-- otherwise it uses the position of the mag part
 local function findMagazineWell(tool: Tool, handle: BasePart, config: Types.WeaponConfig): Vector3?
 	local part = tool:FindFirstChild(config.Magazine.Part, true)
 	local joint = part and part:FindFirstChild("GunJoint")
@@ -58,8 +58,9 @@ local function build(tool: Tool, config: Types.WeaponConfig): Geometry?
 	local muzzle = attachmentPosition(handle, "Muzzle") or forward * handle.Size:Dot(forward:Abs()) / 2
 	local length = handle.Size:Dot(forward:Abs())
 	local eye = attachmentPosition(handle, "AimPoint")
-	-- sights sit above the bore so use that for up: AimPoint's offset from the barrel axis points
-	-- toward the sights, snapped to an axis. Without an AimPoint it's world up and a guessed eye
+	-- the sights sit above the bore, so that is used for up
+	-- the offset of AimPoint from the barrel axis points toward the sights, and it is snapped to an axis
+	-- without an AimPoint, up is world up and the eye is a guess
 	local up: Vector3
 	if eye then
 		local lateral = eye - forward * eye:Dot(forward)

@@ -56,8 +56,8 @@ local Settings = {
 		CreatorTagLifetime = 2, -- seconds
 		HumanoidWait = 5,
 		PoseSmoothing = 15,
-		-- minimum gap between requests per player, used by RequestLimiter. SetAiming is never
-		-- dropped, WeaponService delays it by this interval instead
+		-- the minimum gap between requests for each player, used by RequestLimiter
+		-- SetAiming is never dropped, since WeaponService delays it by this interval instead
 		RequestIntervals = {
 			Reload = 0.3,
 			SetAiming = 1 / 20,

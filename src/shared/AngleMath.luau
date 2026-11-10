@@ -30,8 +30,8 @@ function AngleMath.Smoothstep(t: number): number
 	return t * t * (3 - 2 * t)
 end
 
--- framerate independent lerp alpha: apply it as lerp(current, target, ExpBlend(dt, speed))
--- each frame and it eases the same at any framerate
+-- this is a lerp alpha that does not depend on the framerate
+-- use it as lerp(current, target, ExpBlend(dt, speed)) every frame and it eases the same at any framerate
 function AngleMath.ExpBlend(deltaTime: number, speed: number): number
 	return 1 - math.exp(-deltaTime * speed)
 end

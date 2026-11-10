@@ -112,9 +112,9 @@ export type WeaponConfig = {
 	Handling: HandlingConfig,
 }
 
--- Same as WeaponConfig but everything optional, because a weapon file only lists what it
--- changes and ConfigMerge fills the rest from Defaults. The two have to be edited together,
--- nothing checks that they match
+-- this is the same as WeaponConfig but everything is optional
+-- a weapon file only lists what it changes, and ConfigMerge fills the rest from Defaults
+-- the two have to be edited together, because nothing checks that they match
 export type WeaponOverrides = {
 	Mode: FireMode?,
 	FireInterval: number?,

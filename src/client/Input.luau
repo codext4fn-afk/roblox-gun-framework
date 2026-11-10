@@ -30,8 +30,8 @@ local function makeActionHandler(action: Settings.ActionName, handler: Handler)
 	local touch = Settings.Touch[action]
 	return function(_: string, inputState: Enum.UserInputState, inputObject: InputObject): Enum.ContextActionResult
 		local isTouch = inputObject.UserInputType == Enum.UserInputType.Touch
-		-- holding buttons on a phone sucks so some touch buttons toggle instead. Only Begin
-		-- counts, the release of the tap is ignored, the state lives in `toggled`
+		-- holding buttons on a phone is annoying, so some touch buttons toggle instead
+		-- only Begin counts and the release of the tap is ignored, since the state is kept in toggled
 		if isTouch and touch and touch.Toggle then
 			if inputState == Enum.UserInputState.Begin then
 				toggled[action] = not toggled[action]
@@ -84,8 +84,8 @@ function Input.IsUsingTouch(): boolean
 	return UserInputService:GetLastInputType() == Enum.UserInputType.Touch
 end
 
--- When the cursor isn't a free pointer the aim ray goes through the middle of the screen,
--- and the crosshair is drawn there too
+-- when the cursor is not a free pointer, the aim ray goes through the middle of the screen
+-- the crosshair is drawn there too
 function Input.UsesScreenCenter(): boolean
 	return Input.IsUsingGamepad()
 		or Input.IsUsingTouch()

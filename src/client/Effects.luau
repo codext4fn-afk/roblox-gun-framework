@@ -25,8 +25,8 @@ local Effects = {}
 local SMOKE = "rbxasset://textures/particles/smoke_main.dds"
 local FIRE = "rbxasset://textures/particles/fire_main.dds"
 local SPARK = "rbxasset://textures/particles/sparkles_main.dds"
--- pooled parts wait down here instead of being destroyed or reparented, moving a part is
--- cheaper than creating one again
+-- pooled parts wait down here instead of being destroyed
+-- moving a part is cheaper than creating a new one
 local PARKED = CFrame.new(0, -10000, 0)
 local SOOT_COLOR = Color3.fromRGB(14, 12, 10)
 local CORE_COLOR = Color3.fromRGB(6, 5, 4)
@@ -177,8 +177,8 @@ local function getSurfaceColor(result: RaycastResult): Color3
 	return instance.Color
 end
 
--- One anchor and one set of emitters is shared by every gun. The anchor is moved right before
--- each Emit, which is fine because Emit places the particles immediately
+-- every gun shares one anchor and one set of emitters
+-- the anchor is moved right before each Emit, which works because Emit places the particles immediately
 local muzzleAnchor = makeAnchor("GunFX_Muzzle")
 local muzzleEmitters = {
 	flash = makeEmitter(muzzleAnchor, {
@@ -431,13 +431,13 @@ end
 
 local function addBulletHole(result: RaycastResult)
 	local instance = result.Instance
-	-- holes on moving parts would end up floating, they're placed in world space once and
-	-- never follow the part
+	-- a hole on a moving part would end up floating
+	-- so holes are placed once in world space and never follow the part
 	if not (instance:IsA("BasePart") and instance.Anchored) then
 		return
 	end
-	-- fixed size ring (MaxHoles): when it wraps the oldest hole is reused, bumping its token
-	-- makes the old fade and cleanup timers do nothing
+	-- the holes are a fixed size ring (MaxHoles), and when it wraps the oldest hole is reused
+	-- bumping its token makes the old fade and cleanup timers do nothing
 	local hole = holes[nextHole] or makeHole()
 	holes[nextHole] = hole
 	nextHole = nextHole % EffectSettings.MaxHoles + 1
@@ -511,8 +511,8 @@ local function finishBullet(bullet: Bullet, arrived: boolean)
 	end
 end
 
--- One shared update for every live tracer. Distance is travelled at BulletSpeed so the streak
--- looks like a bullet, but the real shot has already been resolved
+-- one shared update moves every live tracer
+-- it travels at BulletSpeed so the streak looks like a bullet, but the real shot was already decided
 RunService.PreRender:Connect(function(deltaTime: number)
 	for bullet in activeBullets do
 		bullet.traveled += EffectSettings.BulletSpeed * deltaTime
@@ -585,8 +585,8 @@ function Effects.Bullet(from: Vector3, to: Vector3, result: RaycastResult?)
 	activeBullets[bullet] = true
 end
 
--- The server only sends end points, so recast here to learn what surface to show. The ray is
--- 2% longer than the segment so it still reaches the surface at the end point
+-- the server only sends end points, so the ray is cast again here to find the surface
+-- it is 2% longer than the segment, so it still reaches the surface at the end point
 function Effects.RemoteBullet(from: Vector3, to: Vector3, shooterCharacter: Instance)
 	local offset = to - from
 	local result: RaycastResult? = nil
@@ -661,8 +661,8 @@ function Effects.PlaySound(tool: Tool, name: string)
 	if not (handle and template and template:IsA("Sound")) then
 		return
 	end
-	-- clone so rapid shots can overlap, a single Sound restarts instead. TimeLength can be 0
-	-- before the asset loads, so there's a minimum lifetime before it's cleaned up
+	-- the sound is cloned so rapid shots can overlap, since a single Sound would restart
+	-- TimeLength can be 0 before the asset loads, so there is a minimum lifetime before it is cleaned up
 	local sound = template:Clone()
 	sound.Parent = handle
 	sound:Play()

@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 local Types = require(script.Parent.Parent.Types)
 
--- Rig type and liveness checks on a character model. The server uses IsAlive to gate firing
--- and reloading, so it's based on Humanoid.Health and not on anything the client says
+-- rig type and liveness checks for a character model
+-- the server uses IsAlive to allow firing and reloading, so it is based on Humanoid.Health and not on anything the client says
 
 --[[
     This checks the rig type and if a character is alive

@@ -20,8 +20,8 @@ function Spread.CrosshairGap(spreadDegrees: number): number
 	return 6 + spreadDegrees * 5
 end
 
--- sqrt so shots spread evenly over the cone instead of bunching in the middle. A plain
--- random angle would crowd the pellets near the center of the disc
+-- the sqrt makes the shots spread evenly over the cone instead of bunching in the middle
+-- a plain random angle would crowd the pellets near the center of the disc
 function Spread.SampleCone(direction: Vector3, degrees: number, nextNumber: NextNumber): Vector3
 	local angle = math.rad(degrees) * math.sqrt(nextNumber())
 	local roll = nextNumber() * math.pi * 2

@@ -48,8 +48,8 @@ type Elements = {
 
 local elements: Elements? = nil
 local reloadAnimating = false
--- Without this, stopping and starting a reload within one DOT_INTERVAL would leave the old
--- loop alive when it wakes up, and two loops would fight over the label
+-- without this, stopping and starting a reload within one DOT_INTERVAL would leave the old loop alive
+-- then two loops would fight over the label
 local reloadToken = 0
 
 local function guiChildren(parent: Instance): { GuiObject }

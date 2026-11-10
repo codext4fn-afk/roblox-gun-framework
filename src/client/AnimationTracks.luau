@@ -15,8 +15,8 @@ local AnimationTracks = {}
 
 export type Tracks = { [string]: AnimationTrack }
 
--- each one overrides the one above it, so Reload plays over a held aim pose and Fire plays
--- over Hold or Aim
+-- each one overrides the one above it
+-- so Reload plays over a held aim pose, and Fire plays over Hold or Aim
 local PRIORITIES: { [string]: Enum.AnimationPriority } = {
 	Hold = Enum.AnimationPriority.Action,
 	Aim = Enum.AnimationPriority.Action2,
@@ -68,9 +68,9 @@ function AnimationTracks.Load(humanoid: Humanoid, config: Types.WeaponConfig, ri
 	return tracks
 end
 
--- Other players' anims replicate through their Animator and we have no handle on the track,
--- so search the playing ones by id. The track may not be playing yet when this is called, so
--- it polls for up to TRACK_WAIT seconds instead of checking once
+-- other players' animations replicate through their Animator and we have no handle on the track
+-- so the playing ones are searched by id
+-- the track may not be playing yet when this is called, so it polls for up to TRACK_WAIT seconds instead of checking once
 function AnimationTracks.WaitForPlaying(
 	character: Model,
 	config: Types.WeaponConfig,

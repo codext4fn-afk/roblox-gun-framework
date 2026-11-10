@@ -26,8 +26,8 @@ local hiddenDecals: { Decal } = {}
 local needsRebuild = true
 local connections: { RBXScriptConnection } = {}
 
--- BodyPart attribute is read first for the same reason HitZones does it, custom parts that
--- keep another name still count as an arm or a head
+-- the BodyPart attribute is read first, the same way HitZones does it
+-- so custom parts that keep another name still count as an arm or a head
 local function rebuild(model: Model)
 	table.clear(shownParts)
 	table.clear(hiddenParts)

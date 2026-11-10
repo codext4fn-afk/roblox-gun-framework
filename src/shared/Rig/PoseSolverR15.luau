@@ -61,9 +61,9 @@ local function getJoints(character: Model): Joints?
 	return found
 end
 
--- Some rigs have rotated C0s, so a plain pitch would bend a different way on them. basis is
--- the C0 rotation captured when the joint was first found, and wrapping the offset in it
--- keeps the bend axis the same on every rig
+-- some rigs have rotated C0s, so a plain pitch would bend a different way on them
+-- basis is the C0 rotation saved when the joint was first found
+-- wrapping the offset in it keeps the bend axis the same on every rig
 local function applyInParentSpace(joint: Joint?, offset: CFrame)
 	if joint then
 		layer.Apply(joint.motor, joint.basis:Inverse() * offset * joint.basis)

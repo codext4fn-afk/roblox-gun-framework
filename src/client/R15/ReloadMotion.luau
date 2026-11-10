@@ -108,10 +108,10 @@ local RACK_REACH, RACK_PULL, RACK_RELEASE = 0.07, 0.06, 0.03
 
 local smoothstep = AngleMath.Smoothstep
 
--- Uses the mag joint if there is one, otherwise a MagazineWell attachment (prop guns)
--- `down` is the direction the mag slides out, `length` how long it is along that direction
--- The authored MagazineLength is multiplied by the R15Scale attribute that WeaponScaler puts
--- on the tool, since the gun was shrunk on the server and the number was written for full size
+-- this uses the mag joint if there is one, otherwise a MagazineWell attachment (prop guns)
+-- down is the direction the mag slides out, and length is how long it is along that direction
+-- the authored MagazineLength is multiplied by the R15Scale attribute that WeaponScaler puts on the tool
+-- the gun was shrunk on the server, and the number was written for the full size
 local function wellGeometry(tool: Tool, part: BasePart?, joint: Motor6D?): (CFrame?, Vector3, number)
 	local forward = WeaponAxes.ForwardAxis(tool)
 	if joint and part then
@@ -136,8 +136,8 @@ local function wellGeometry(tool: Tool, part: BasePart?, joint: Motor6D?): (CFra
 	return nil, -Vector3.yAxis, 0
 end
 
--- Guns with no mag part get a stand-in prop cloned from WeaponSystem/Props, invisible until
--- the hand grabs it. Anchored and non-colliding so it's only a visual
+-- guns with no mag part get a stand-in prop cloned from WeaponSystem/Props, and it stays invisible until the hand grabs it
+-- it is anchored and does not collide, so it is only visual
 local function makeProp(name: string): BasePart?
 	local props = WeaponSystem:FindFirstChild("Props")
 	local template = props and name ~= "" and props:FindFirstChild(name)
@@ -210,9 +210,9 @@ function ReloadMotion.new(tool: Tool, config: Types.WeaponConfig, options: Optio
 	return self
 end
 
--- Everything after the mag goes in is laid out one after another (seat, optional tap, optional
--- rack, return). BoltFeed does its own bolt work earlier so it skips tap and rack here. The
--- return is capped under 1 so the hand is back on the gun before the reload ends
+-- everything after the mag goes in is laid out one after another (seat, optional tap, optional rack, return)
+-- BoltFeed does its own bolt work earlier, so it skips tap and rack here
+-- the return is capped under 1, so the hand is back on the gun before the reload ends
 function ReloadMotion._buildTimeline(self: ReloadMotion)
 	local t = self.times
 	local line: Timeline = { seatAt = t.In + SEAT, returnAt = 0 }
@@ -232,8 +232,8 @@ function ReloadMotion._buildTimeline(self: ReloadMotion)
 	self.line = line
 end
 
--- Once, on the first frame past `at`. Progress moves by frame, so a step can't be hit exactly
--- and this is what makes sure it still happens, and only one time
+-- this runs once, on the first frame past at
+-- progress moves by frame, so a step can never be hit exactly, and this makes sure it still happens only one time
 function ReloadMotion._fire(self: ReloadMotion, name: string, at: number?, action: () -> ())
 	if at and self.progress >= at and not self.fired[name] then
 		self.fired[name] = true
@@ -396,8 +396,8 @@ function ReloadMotion.Evaluate(self: ReloadMotion, handle: CFrame, supportPalm: 
 		end
 	end
 	local palmToMagazine = self.palmToMagazine
-	-- mag follows the palm until it's seated. Both keys have to be holding, so it doesn't snap
-	-- to a hand that's only passing by
+	-- the mag follows the palm until it is seated
+	-- both keys have to be holding, so it does not snap to a hand that is only passing by
 	local held = if holding and progress < self.line.seatAt and palmToMagazine then palm * palmToMagazine else nil
 	local joint, seated = self.joint, self.seated
 	if joint and seated then

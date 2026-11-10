@@ -7,10 +7,9 @@
 
 local ConfigMerge = {}
 
--- Copy so a weapon never shares a nested table with Defaults, otherwise editing one
--- weapon's Damage at runtime would change every other weapon too. Vector3, CFrame and
--- Color3 are userdata, not tables, so they fall through and get shared, which is fine
--- because they're immutable
+-- this copies, so a weapon never shares a nested table with Defaults
+-- without it, editing the Damage of one weapon at runtime would change every other weapon too
+-- Vector3, CFrame and Color3 are userdata and not tables, so they get shared, and that is fine because they cannot change
 local function deepCopy(value: any): any
 	if type(value) ~= "table" then
 		return value
@@ -35,9 +34,9 @@ function ConfigMerge.Merge(base: { [string]: any }, override: { [string]: any })
 	return result
 end
 
--- Catches typos in weapon configs like Recoil.Kik. Merge would happily carry an unknown
--- key along and nothing would ever read it. This only works because Defaults lists every
--- key, so a new setting has to be added there first
+-- this catches typos in weapon configs, like Recoil.Kik
+-- Merge would carry an unknown key along and nothing would ever read it
+-- it only works because Defaults lists every key, so a new setting has to be added there first
 function ConfigMerge.UnknownKeys(base: { [string]: any }, override: { [string]: any }, path: string?): { string }
 	local unknown = {}
 	for key, value in override do

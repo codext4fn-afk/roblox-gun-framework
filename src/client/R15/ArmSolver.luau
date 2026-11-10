@@ -56,8 +56,8 @@ local function basisFrom(primary: Vector3, secondary: Vector3): CFrame?
 	return CFrame.fromMatrix(Vector3.zero, x, y, x:Cross(y))
 end
 
--- Lengths and bone directions are measured from the rig's own joints, so it works for
--- differently proportioned R15 avatars. nil if the arm is missing a joint
+-- the lengths and bone directions are measured from the rig's own joints, so it works for differently proportioned R15 avatars
+-- it gives nil if the arm is missing a joint
 local function buildChain(character: Model, side: Side): Chain?
 	local parts, names = CHAIN_PARTS[side], JOINT_NAMES[side]
 	local shoulder = findMotor(character, parts.upper, names.shoulder)
@@ -99,9 +99,9 @@ local function partFrame(pivot: Vector3, rotation: CFrame, childOffset: Vector3)
 	return CFrame.new(pivot) * rotation * CFrame.new(-childOffset)
 end
 
--- Divide out Transform so IK wins over the arm anim: Roblox applies C0 * Transform * C1^-1, so
--- without the inverse here the animation would be added on top of the solved pose. weight
--- below 1 blends from the original C0 toward the solved one
+-- Transform is divided out so IK wins over the arm animation
+-- Roblox applies C0 * Transform * C1^-1, so without the inverse the animation would be added on top of the solved pose
+-- a weight below 1 blends from the original C0 toward the solved one
 local function writeJoint(joint: Joint, part0: CFrame, part1: CFrame, weight: number)
 	local motor = joint.motor
 	local solved = part0:Inverse() * part1 * motor.C1 * motor.Transform:Inverse()
@@ -127,8 +127,8 @@ function ArmSolver.Solve(
 
 	local shoulderPivot = space * shoulder.base.Position
 	local toWrist = handTarget * wrist.motor.C1.Position - shoulderPivot
-	-- out of reach, slide the shoulder forward first, up to MAX_PROTRACTION, and only after
-	-- that does the arm get clamped to REACH_LIMIT
+	-- if the target is out of reach, the shoulder slides forward first, up to MAX_PROTRACTION
+	-- only after that is the arm clamped to REACH_LIMIT
 	local excess = toWrist.Magnitude - (upperLength + lowerLength) * REACH_LIMIT
 	if excess > 0 then
 		local shift = toWrist.Unit * math.min(excess, MAX_PROTRACTION)
@@ -143,13 +143,13 @@ function ArmSolver.Solve(
 	)
 	local wristPivot = shoulderPivot + axis * reach
 
-	-- law of cosines: `along` is how far down the shoulder to wrist line the elbow sits, `height`
-	-- how far it's pushed off that line
+	-- law of cosines
+	-- along is how far down the shoulder to wrist line the elbow sits, and height is how far it is pushed off that line
 	local along = (upperLength * upperLength - lowerLength * lowerLength + reach * reach) / (2 * reach)
 	local height = math.sqrt(math.max(upperLength * upperLength - along * along, 0))
 	local toPole = pole - shoulderPivot
-	-- elbow points at the pole. If the pole is on the shoulder to wrist line there's no side to
-	-- pick, so it falls back to pointing down
+	-- the elbow points at the pole
+	-- if the pole is on the shoulder to wrist line there is no side to pick, so it points down
 	local bend = toPole - axis * toPole:Dot(axis)
 	if bend.Magnitude < 1e-4 then
 		bend = -space.UpVector
@@ -180,8 +180,8 @@ function ArmSolver.Solve(
 	writeJoint(wrist, lowerArm, hand, weight)
 end
 
--- gives WeaponRig the shoulder rest position and max reach, so it can place poles and pull the
--- gun in for short arms without doing its own measuring
+-- this gives WeaponRig the shoulder rest position and the max reach
+-- that way it can place poles and pull the gun in for short arms without measuring by itself
 function ArmSolver.GetShoulder(character: Model, side: Side): (Vector3?, number)
 	local chain = getChain(character, side)
 	if not chain then

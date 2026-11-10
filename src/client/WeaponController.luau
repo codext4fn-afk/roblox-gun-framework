@@ -46,8 +46,8 @@ local FRAME_PRIORITY = Enum.RenderPriority.Camera.Value + 5
 local ALIGN_MIN_DISTANCE = 2
 local POSE_FADE = 0.15
 
--- Shared with other scripts, a sprint system can set Sprinting or MovementManaged. Sprinting
--- stops firing here, and MovementManaged tells me not to touch WalkSpeed
+-- these are shared with other scripts, so a sprint system can set Sprinting or MovementManaged
+-- Sprinting stops firing here, and MovementManaged means WalkSpeed is not touched
 local ADS_ATTRIBUTE = "AimingDownSights"
 local SPRINTING_ATTRIBUTE = "Sprinting"
 local MOVEMENT_MANAGED_ATTRIBUTE = "MovementManaged"
@@ -83,8 +83,8 @@ local function getCurrentSpread(equipped: ClientTypes.Equipped): number
 	return Spread.Current(equipped.config.HipSpread, equipped.config.AimSpread, Camera.GetAimAlpha())
 end
 
--- The camera ray starts behind the character in third person, so I move the start up to the
--- head's depth along the ray, otherwise a wall behind you would be the thing you aim at
+-- in third person the camera ray starts behind the character
+-- so the start is moved to the head's depth along the ray, or a wall behind you would be what you aim at
 local function getAimTarget(equipped: ClientTypes.Equipped): Vector3
 	local origin, direction = Camera.GetAimRay(Input.UsesScreenCenter())
 	local head = equipped.character:FindFirstChild("Head")
@@ -110,9 +110,9 @@ local function updatePoseAnimations(equipped: ClientTypes.Equipped, isAiming: bo
 	end
 end
 
--- aiming = allowed to shoot, zooming = aim button held. First person counts as aiming without
--- zooming. This is the only place SetAiming is sent, and the server needs it before it
--- accepts a Fire
+-- aiming means allowed to shoot, and zooming means the aim button is held
+-- first person counts as aiming without zooming
+-- this is the only place SetAiming is sent, and the server needs it before it accepts a Fire
 local function setAiming(isAiming: boolean)
 	local equipped = current
 	if not equipped or equipped.aiming == isAiming then
@@ -147,8 +147,8 @@ local function refreshAiming()
 	end
 end
 
--- In first person the barrel and crosshair don't line up, bend the arms to close the gap
--- (this is purely visual, the shot goes along the aim ray from the head regardless)
+-- in first person the barrel and the crosshair do not line up, so the arms bend to close the gap
+-- this is only visual, because the shot goes along the aim ray from the head anyway
 local function alignGunToCrosshair(equipped: ClientTypes.Equipped, deltaTime: number)
 	local torso = equipped.character:FindFirstChild(equipped.rig.AlignTorso)
 	local gunOrigin, gunDirection = nil, nil
@@ -181,8 +181,8 @@ local function requestReload()
 		return
 	end
 	local character, tool, config = equipped.character, equipped.tool, equipped.config
-	-- the server runs the real timer and drops duplicates (rate limit and its own Reloading
-	-- flag), everything below is just the local animation starting without waiting for it
+	-- the server runs the real timer and drops duplicates (the rate limit and its own Reloading flag)
+	-- everything below is only the local animation starting without waiting
 	Remotes.Reload:FireServer(tool)
 	Effects.PlaySound(tool, "Reload")
 	equipped.rig.Reload(character, tool, config, {
@@ -198,9 +198,9 @@ local function requestReload()
 	})
 end
 
--- Cosmetic only. This recasts the pellets locally to place tracers and decide on a
--- hitmarker, so it can disagree with the server's own cast (lag, moving targets). The
--- server decides what got hit, and other players see its positions via ReplicateShot
+-- this is only for looks
+-- the pellets are cast again locally to place the tracers and pick the hitmarker, so it can disagree with the server (lag, moving targets)
+-- the server decides what got hit, and other players see its positions through ReplicateShot
 local function showShot(equipped: ClientTypes.Equipped, origin: Vector3, aimDirection: Vector3, directions: { Vector3 })
 	local tool, config = equipped.tool, equipped.config
 	local muzzle = Effects.GetMuzzlePosition(tool) or origin
@@ -233,9 +233,9 @@ local function showShot(equipped: ClientTypes.Equipped, origin: Vector3, aimDire
 	end
 end
 
--- Same checks as the server so we don't predict shots it'll throw out. The interval check is
--- a bit stricter than the server's ShotClock, which allows a little burst for jitter, so the
--- client never fires faster than the server would accept
+-- these are the same checks as the server, so we do not predict shots it will throw out
+-- the interval check is a bit stricter than ShotClock, which allows a little burst for jitter
+-- so the client never fires faster than the server would accept
 local function fire(equipped: ClientTypes.Equipped)
 	local tool, config = equipped.tool, equipped.config
 	if not equipped.aiming then
@@ -265,14 +265,14 @@ local function fire(equipped: ClientTypes.Equipped)
 		equipped.triggerHeld = false
 	end
 
-	-- shoot from the head, the server checks the origin against it (OriginWithinReach) and
-	-- does a line of sight check from the head to the origin
+	-- the shot starts at the head, because the server checks the origin against it (OriginWithinReach)
+	-- it also does a line of sight check from the head to the origin
 	local origin = head.Position
 	local toTarget = getAimTarget(equipped) - origin
 	local _, centerDirection = Camera.GetAimRay(true)
 	local aimDirection = if toTarget.Magnitude > 1 then toTarget.Unit else centerDirection
-	-- the pattern uses the current spread (narrower while zoomed), the server only accepts
-	-- pellets inside the hip spread plus a tolerance
+	-- the pattern uses the current spread, which is narrower while zoomed
+	-- the server only accepts pellets inside the hip spread plus a tolerance
 	local directions = Spread.Pattern(aimDirection, getCurrentSpread(equipped), config.Pellets, nextNumber)
 
 	Remotes.Fire:FireServer(tool, origin, aimDirection, directions)
@@ -280,8 +280,8 @@ local function fire(equipped: ClientTypes.Equipped)
 end
 
 local inputHandlers: Input.Handlers = {
-	-- just latch the trigger, onFrame does the shooting so the rate is tied to frames and
-	-- held fire for automatic modes doesn't need its own loop
+	-- this only latches the trigger, and onFrame does the shooting
+	-- that way the rate follows the frames, and held fire for automatic guns does not need its own loop
 	Fire = function(isPressed: boolean)
 		local equipped = current
 		if equipped then
@@ -304,8 +304,9 @@ local inputHandlers: Input.Handlers = {
 	end,
 }
 
--- Order matters: input goes first so nothing fires mid teardown, and the aim flags are
--- cleared through setZoom and setAiming so the server gets its SetAiming false too
+-- the order matters
+-- input goes first, so nothing fires while this is being torn down
+-- the aim flags are cleared through setZoom and setAiming, so the server gets its SetAiming false too
 local function unequip()
 	local equipped = current
 	if not equipped then
@@ -402,8 +403,8 @@ local function onFrame(deltaTime: number)
 	)
 end
 
--- Watch the character instead of Tool.Equipped so tools parented by other scripts work too
--- This matches how the server decides a gun is equipped (Tool.Parent == character)
+-- this watches the character instead of Tool.Equipped, so tools parented by other scripts work too
+-- it matches how the server decides a gun is equipped (Tool.Parent == character)
 local function onCharacter(character: Model)
 	unequip()
 	character.ChildAdded:Connect(function(child)
