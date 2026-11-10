@@ -1,10 +1,14 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+-- Finds the handle, attachments and joints on a gun model. Models aren't all built facing
+-- the same way, so nothing here assumes a direction, the barrel axis is worked out from
+-- where the Muzzle attachment sits. Used by WeaponScaler on the server among others. Everything can return nil when a model is missing a piece, callers have to cope.
 local AngleMath = require(script.Parent.AngleMath)
 
 local WeaponAxes = {}
 
-local DEFAULT_MUZZLE = Vector3.new(-1, 0, 0) -- used when there's no Muzzle attachment
+-- used when there's no Muzzle attachment
+local DEFAULT_MUZZLE = Vector3.new(-1, 0, 0)
 local SHOOT_POINT = "ShootFirst"
 
 function WeaponAxes.GetHandle(tool: Instance): BasePart?
@@ -25,6 +29,7 @@ end
 
 function WeaponAxes.GunRay(tool: Instance): (Vector3?, Vector3?)
 	local handle = WeaponAxes.GetHandle(tool)
+	-- recursive search because the shoot point sits on a child part (the barrel), not the handle
 	local point = tool:FindFirstChild(SHOOT_POINT, true)
 	if not (handle and point and point:IsA("Attachment")) then
 		return nil, nil
@@ -32,6 +37,7 @@ function WeaponAxes.GunRay(tool: Instance): (Vector3?, Vector3?)
 	return point.WorldPosition, handle.CFrame:VectorToWorldSpace(WeaponAxes.ForwardAxis(tool))
 end
 
+-- Bolt and mag parts are expected to carry a Motor6D called GunJoint
 function WeaponAxes.FindJoint(tool: Instance, partName: string?): (Motor6D?, BasePart?)
 	if type(partName) ~= "string" then
 		return nil, nil
