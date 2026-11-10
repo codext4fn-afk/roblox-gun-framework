@@ -3,6 +3,12 @@
 
 -- Tracers, muzzle flash, impacts, bullet holes, casings and sounds
 -- Everything is pooled so full auto doesn't spam Instance.new
+--
+-- Purely cosmetic and local to each client, none of it is seen by the server and none of it
+-- may affect gameplay, so every effect part has CanQuery off and shots never hit them. It
+-- gets calls from WeaponController (own shots) and RemoteWeapons (other players' shots) and
+-- trusts both to pass real points. Hits are hitscan, the tracer only imitates a bullet in
+-- flight, and the impact is played when that tracer arrives and not when the shot was fired.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -21,7 +27,9 @@ local Effects = {}
 local SMOKE = "rbxasset://textures/particles/smoke_main.dds"
 local FIRE = "rbxasset://textures/particles/fire_main.dds"
 local SPARK = "rbxasset://textures/particles/sparkles_main.dds"
-local PARKED = CFrame.new(0, -10000, 0) -- pooled parts wait down here
+-- pooled parts wait down here instead of being destroyed or reparented, moving a part is
+-- cheaper than creating one again
+local PARKED = CFrame.new(0, -10000, 0)
 local SOOT_COLOR = Color3.fromRGB(14, 12, 10)
 local CORE_COLOR = Color3.fromRGB(6, 5, 4)
 local FALLBACK_SURFACE = Color3.fromRGB(120, 110, 100)
@@ -171,6 +179,8 @@ local function getSurfaceColor(result: RaycastResult): Color3
 	return instance.Color
 end
 
+-- One anchor and one set of emitters is shared by every gun. The anchor is moved right before
+-- each Emit, which is fine because Emit places the particles immediately
 local muzzleAnchor = makeAnchor("GunFX_Muzzle")
 local muzzleEmitters = {
 	flash = makeEmitter(muzzleAnchor, {
@@ -292,6 +302,7 @@ local impactEmitters = {
 }
 local impactLight = makeLight(impactAnchor, Color3.fromRGB(255, 200, 130), 4, 2)
 
+-- the pool is a fixed ring, see nextBullet in Effects.Bullet
 local function makeBullet(): Bullet
 	local tail = makeAnchor("GunFX_BulletTail")
 	local head = makeAnchor("GunFX_BulletHead")
@@ -399,6 +410,7 @@ local function stopHoleTweens(hole: Hole)
 	table.clear(hole.tweens)
 end
 
+-- token is compared after the fade so a hole that got recycled in the meantime isn't parked
 local function fadeHole(hole: Hole, token: number)
 	local info = TweenInfo.new(EffectSettings.HoleFadeTime)
 	table.insert(hole.tweens, TweenService:Create(hole.soot, info, { Transparency = 1 }))
@@ -421,10 +433,13 @@ end
 
 local function addBulletHole(result: RaycastResult)
 	local instance = result.Instance
-	-- holes on moving parts would end up floating
+	-- holes on moving parts would end up floating, they're placed in world space once and
+	-- never follow the part
 	if not (instance:IsA("BasePart") and instance.Anchored) then
 		return
 	end
+	-- fixed size ring (MaxHoles): when it wraps the oldest hole is reused, bumping its token
+	-- makes the old fade and cleanup timers do nothing
 	local hole = holes[nextHole] or makeHole()
 	holes[nextHole] = hole
 	nextHole = nextHole % EffectSettings.MaxHoles + 1
@@ -498,6 +513,8 @@ local function finishBullet(bullet: Bullet, arrived: boolean)
 	end
 end
 
+-- One shared update for every live tracer. Distance is travelled at BulletSpeed so the streak
+-- looks like a bullet, but the real shot has already been resolved
 RunService.PreRender:Connect(function(deltaTime: number)
 	for bullet in activeBullets do
 		bullet.traveled += EffectSettings.BulletSpeed * deltaTime
@@ -511,6 +528,7 @@ RunService.PreRender:Connect(function(deltaTime: number)
 	end
 end)
 
+-- warns once per tool when the Muzzle attachment is missing, this gets called on every shot
 function Effects.GetMuzzlePosition(tool: Tool): Vector3?
 	local handle = WeaponAxes.GetHandle(tool)
 	if not handle then
@@ -543,6 +561,7 @@ end
 function Effects.Bullet(from: Vector3, to: Vector3, result: RaycastResult?)
 	local offset = to - from
 	local distance = offset.Magnitude
+	-- too short to draw a streak, just show the impact straight away
 	if distance < 0.5 then
 		if result then
 			playImpact(result)
@@ -568,7 +587,8 @@ function Effects.Bullet(from: Vector3, to: Vector3, result: RaycastResult?)
 	activeBullets[bullet] = true
 end
 
--- server only sends end points, recast here to know what surface to show
+-- The server only sends end points, so recast here to learn what surface to show. The ray is
+-- 2% longer than the segment so it still reaches the surface at the end point
 function Effects.RemoteBullet(from: Vector3, to: Vector3, shooterCharacter: Instance)
 	local offset = to - from
 	local result: RaycastResult? = nil
@@ -621,11 +641,13 @@ function Effects.EjectCasing(tool: Tool, config: Types.WeaponConfig)
 	part.AssemblyAngularVelocity =
 		Vector3.new(rng:NextNumber(-25, 25), rng:NextNumber(-25, 25), rng:NextNumber(-25, 25))
 
+	-- TODO(me): explain why CanCollide only turns on after 0.08s
 	task.delay(0.08, function()
 		if casing.token == token then
 			part.CanCollide = true
 		end
 	end)
+	-- the token check is what stops a recycled casing from being parked by an old timer
 	task.delay(EffectSettings.CasingLifetime, function()
 		if casing.token == token then
 			part.Anchored = true
@@ -641,7 +663,8 @@ function Effects.PlaySound(tool: Tool, name: string)
 	if not (handle and template and template:IsA("Sound")) then
 		return
 	end
-	-- clone so rapid shots can overlap
+	-- clone so rapid shots can overlap, a single Sound restarts instead. TimeLength can be 0
+	-- before the asset loads, so there's a minimum lifetime before it's cleaned up
 	local sound = template:Clone()
 	sound.Parent = handle
 	sound:Play()
