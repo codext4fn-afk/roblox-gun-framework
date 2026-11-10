@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Plays other players' shots and reloads
-    The server never sends you your own, it skips the shooter
-    The payload is type checked anyway, positions are the server's own raycast results
+    This plays the shots and reloads of other players
+    The server never sends you your own, because it skips the shooter
+    The payload is still type checked, and the positions are the server's own raycast results
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

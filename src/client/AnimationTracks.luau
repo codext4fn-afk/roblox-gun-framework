@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Loads the Hold, Aim, Fire and Reload tracks for a weapon and caches them per Animator
-    WeaponAnimations picks the ids, this only builds the tracks
-    A missing animation is just absent, so callers nil check every track
+    This loads the Hold, Aim, Fire and Reload tracks for a weapon
+    WeaponAnimations picks the ids, this only turns them into tracks and keeps them cached
+    If an animation is missing it is left out, so callers have to check for nil
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

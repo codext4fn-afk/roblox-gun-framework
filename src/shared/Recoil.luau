@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Camera recoil in degrees, client only
-    Kicks stack up and decay back to zero, the caller reads pitch, yaw and shake from Step
-    The randomness comes from the caller, this never calls math.random
+    This is the camera recoil in degrees, and only the client uses it
+    Kicks add up and then fade back to zero, and the caller reads pitch, yaw and shake from Step
+    The randomness comes from the caller, so this never calls math.random
 ]]
 
 local Recoil = {}

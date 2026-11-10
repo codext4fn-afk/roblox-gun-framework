@@ -2,9 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Local player's gun: input, aiming, firing, reloading and the per frame update
-    All of it is prediction, the server decides what happened and ammo and reload state come back through Tool attributes
-    The server refuses Fire unless Aiming is on, so SetAiming is sent whenever aiming changes here
+    This controls the local player's gun: input, aiming, firing, reloading and the update every frame
+    Everything here is a prediction, because the server decides what really happened
+    Ammo and reload state come back through the Tool attributes
+    The server refuses Fire unless Aiming is on, so SetAiming is sent every time aiming changes here
 ]]
 
 local Players = game:GetService("Players")

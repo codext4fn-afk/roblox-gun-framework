@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Shared types, no runtime code
+    These are the shared types, there is no runtime code
     ConfigValidator is what checks that real configs match them
 ]]
 

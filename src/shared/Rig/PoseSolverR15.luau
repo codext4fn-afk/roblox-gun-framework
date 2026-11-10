@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Poses an R15 waist and neck from the pose table
-    Same module on server and client, JointLayer decides how it's written
-    Quietly does nothing if the joints are missing
+    This poses the R15 waist and neck from the pose table
+    The server and the client use the same module, and JointLayer decides how it is written
+    If the joints are missing it quietly does nothing
 ]]
 local RunService = game:GetService("RunService")
 

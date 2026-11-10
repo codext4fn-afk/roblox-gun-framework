@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Picks the pose solver for a character's rig, nil without a Humanoid
+    This picks the pose solver for a character's rig, and gives nil if there is no Humanoid
 ]]
 local CharacterRig = require(script.CharacterRig)
 local PoseSolverR15 = require(script.PoseSolverR15)

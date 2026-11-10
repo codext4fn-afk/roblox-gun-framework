@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Drives the GunHUD gui, the layout is in assets/GunHUD.model.json
-    Only sets what it's told, WeaponController decides when
-    bind() waits forever if a child name is missing from the gui
+    This controls the GunHUD gui, and the layout itself is in assets/GunHUD.model.json
+    It only sets what it is told, and WeaponController decides when
+    If a child name is missing from the gui, bind() waits forever
 ]]
 
 local Players = game:GetService("Players")

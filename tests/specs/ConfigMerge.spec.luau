@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Merge must never share a nested table with Defaults, and UnknownKeys must report full paths
+    Merge must never share a nested table with Defaults, and UnknownKeys must give the full path
 ]]
 return function(test, expect, load)
 	local ConfigMerge = load("shared/ConfigMerge")

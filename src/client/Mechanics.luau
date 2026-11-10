@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Bolt and mag movement on the gun through GunJoint C0s, cosmetic only
-    The first time a joint is seen its rest C0 and Part0 are saved so Cancel can restore them
-    Reload steps run off animation markers or timers from the Magazine fractions, and any step can be aborted
+    This moves the bolt and the magazine on the gun through the GunJoint C0s, and it is only visual
+    The first time a joint is seen its rest C0 and Part0 are saved, so Cancel can put them back
+    A reload runs from animation markers or from timers, and any step can be stopped
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Client rig for R15, pose goes through PoseSolverR15 and the gun and hands through R15/WeaponRig
+    This is the client rig for R15, the pose goes through PoseSolverR15 and the gun and hands go through R15/WeaponRig
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

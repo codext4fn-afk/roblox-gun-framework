@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Shows the arms and gun in first person, Roblox hides the whole character otherwise
+    Roblox hides the whole character in first person, so this shows the arms and the gun again
     The part lists are cached and only rebuilt when the character changes, so each frame just sets a property
 ]]
 

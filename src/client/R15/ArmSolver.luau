@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Two bone IK for R15 arms, writes shoulder, elbow and wrist C0s so the hand reaches the target
-    WeaponRig gives a hand target and a pole, weight blends back to the original C0 so an animation can take the arms over
+    This is two bone IK for R15 arms, and it writes the shoulder, elbow and wrist C0s so the hand reaches the target
+    WeaponRig gives it a hand target and a pole, and the weight blends back to the original C0 so an animation can take the arms over
 ]]
 -- TODO(me): explain MAX_PROTRACTION and FOREARM_TWIST, I don't know how those were picked
 

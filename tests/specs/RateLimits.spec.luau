@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Server rate limits: sustained fire can't beat the configured rate and an honest shooter is never refused
+    These test the server rate limits: sustained fire cannot beat the set rate, and an honest shooter is never refused
 ]]
 return function(test, expect, load)
 	local RequestLimiter = load("server/RequestLimiter")

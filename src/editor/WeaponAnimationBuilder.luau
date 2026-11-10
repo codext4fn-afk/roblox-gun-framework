@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Generates per weapon anim drafts into AnimationDrafts, run Build("AK") from the command bar
-    Studio only, publish the drafts and put the ids in the config
-    The R6 reload is solved to the gun's own points, R15 clips are scaled by ArmKick
+    This makes animation drafts for each weapon in AnimationDrafts, run Build("AK") from the command bar
+    It only works in Studio, so publish the drafts and put the ids in the config
+    The R6 reload is solved to the gun's own points, and the R15 clips are scaled by ArmKick
 ]]
 -- TODO(me): explain the tuning numbers (BELOW_WELL, the 0.04/0.06/0.08/0.22 key offsets, 0.85 hip blend, 1.2 bolt pull)
 

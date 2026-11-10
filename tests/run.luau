@@ -3,8 +3,8 @@
 
 --[[
     lune run tests/run.luau
-    Runs every spec in tests/specs, a failing test is caught so the rest still run
-    Exits with 1 if anything failed so CI can fail on it
+    This runs every spec in tests/specs, and a failing test is caught so the rest still run
+    It exits with 1 if anything failed, so CI can fail on it
 ]]
 
 local fs = require("@lune/fs")

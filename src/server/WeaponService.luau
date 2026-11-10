@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Server side of the gun system, the client predicts and this decides
-    Owns ammo, reload state, Aiming and AimPitch, per character setup and the four client remotes
-    Only the tool and the pellet directions come from the client and both get validated
+    This is the server side of the gun system, the client predicts and this script decides
+    It controls ammo, reload state, Aiming and AimPitch, the setup of each character and the four client remotes
+    The only things taken from the client are the tool and the pellet directions, and both get checked
     Replicated state: Tool.Ammo, Tool.Reloading, Character.Aiming, Character.AimPitch
 ]]
 
@@ -31,10 +31,10 @@ local ServerSettings = Settings.Server
 
 type ToolState = {
 	clock: ShotClock.ShotClock,
-	-- Bumped on every reload and checked again when the reload timer fires, so a timer that
-	-- belongs to an older reload does nothing. Right now only onReload bumps it, and the
-	-- Reloading flag already blocks a second reload, so it never differs in practice. It's
-	-- here so a future cancel (unequip, death) only has to bump it to stop the refill
+	-- this goes up on every reload and is checked again when the timer ends
+	-- that way a timer from an older reload does nothing
+	-- right now only onReload changes it, and Reloading already blocks a second reload, so it never differs
+	-- it is here so a future cancel (unequip, death) only has to bump it to stop the refill
 	reloadToken: number,
 }
 
@@ -75,9 +75,9 @@ local function getAmmo(tool: Tool, config: Types.WeaponConfig): number
 	return if type(ammo) == "number" then ammo else config.MagSize
 end
 
--- The tool comes from the client, so check it's a real configured Tool, parented to this
--- player's own living character. Tool.Parent == character is what means "equipped", a
--- tool sitting in the backpack or in someone else's hands is refused
+-- the tool comes from the client, so it has to be checked
+-- it must be a real configured Tool inside this player's own living character
+-- Tool.Parent == character means it is equipped, so a tool in the backpack or in someone else's hands is refused
 local function getEquippedGun(player: Player, tool: unknown): (Model?, Tool?, Types.WeaponConfig?)
 	local config = WeaponRegistry.GetConfig(tool)
 	local character = player.Character
@@ -95,9 +95,9 @@ local function getHead(character: Model): BasePart?
 	return if head and head:IsA("BasePart") then head else nil
 end
 
--- The shot origin is client supplied, so without this you could put it on the far side of
--- a thin wall and shoot through. Cast from the head, which the server knows, to the origin
--- Accessories and held tools have CanQuery off so they don't count as walls
+-- the shot origin comes from the client, so without this check it could be placed behind a thin wall
+-- the ray goes from the head, which the server knows, to the origin
+-- accessories and held tools have CanQuery off, so they do not count as walls
 local function hasLineOfSight(character: Model, from: Vector3, to: Vector3): boolean
 	local offset = to - from
 	if offset.Magnitude < 1e-3 then
@@ -106,9 +106,8 @@ local function hasLineOfSight(character: Model, from: Vector3, to: Vector3): boo
 	return workspace:Raycast(from, offset, Raycast.Excluding({ character })) == nil
 end
 
--- Only players within ReplicateDistance get the effects, so far away clients aren't sent
--- remote calls for shots they can't see. The shooter is skipped because they already
--- played it locally
+-- only players within ReplicateDistance get the effects, since far away clients cannot see the shot anyway
+-- the shooter is skipped because they already played it locally
 local function getNearbyPlayers(shooter: Player, position: Vector3): { Player }
 	local nearby = {}
 	for _, other in Players:GetPlayers() do
@@ -125,17 +124,17 @@ local function getNearbyPlayers(shooter: Player, position: Vector3): { Player }
 	return nearby
 end
 
--- Aiming counts as a requirement for firing. desiredAiming is checked too because the
--- attribute can lag behind when SetAiming was rate limited, and I don't want to reject
--- a shot from someone who really did press aim first
+-- aiming is required for firing
+-- desiredAiming is checked too, because the attribute can lag behind when SetAiming was rate limited
+-- without it a shot from someone who really pressed aim first would be rejected
 local function isAiming(player: Player, character: Model): boolean
 	return character:GetAttribute("Aiming") == true or getPlayerState(player).desiredAiming
 end
 
--- Order matters here. Cheap checks first, then the raycast for line of sight, and the
--- ShotClock goes last so a request that was going to be refused anyway doesn't use up
--- burst credit. Ammo is only touched once everything has passed. There's no limiter on
--- Fire itself, the ShotClock is the limit
+-- the order matters here
+-- cheap checks go first, then the raycast for line of sight
+-- ShotClock goes last, because a request that gets refused anyway should not use up burst credit
+-- ammo only changes after everything passed, and Fire has no limiter, ShotClock is the limit
 local function onFire(player: Player, tool: unknown, origin: unknown, aimDirection: unknown, directions: unknown)
 	local character, equipped, config = getEquippedGun(player, tool)
 	if not (character and equipped and config) or not isAiming(player, character) then
@@ -166,8 +165,8 @@ local function onFire(player: Player, tool: unknown, origin: unknown, aimDirecti
 	end
 
 	equipped:SetAttribute("Ammo", ammo - 1)
-	-- hip spread + tolerance since we can't know how far into ADS the client was, so hip
-	-- spread is the widest cone that could be legit. Bad pellets are dropped, the shot isn't
+	-- the server cannot know how far into ADS the client was, so hip spread plus a tolerance is the widest cone that could be real
+	-- bad pellets are dropped one by one, the shot is not
 	local accepted = ShotValidator.FilterDirections(
 		directions :: { unknown },
 		aim,
@@ -179,8 +178,8 @@ local function onFire(player: Player, tool: unknown, origin: unknown, aimDirecti
 	end
 end
 
--- The server decides when a reload finishes. The client animation is only cosmetic, ammo
--- is refilled by the delay below
+-- the server decides when a reload finishes, and the client animation is only for looks
+-- the ammo is refilled by the delay below
 local function onReload(player: Player, tool: unknown)
 	if not limiter:Allow(player, "Reload", os.clock()) then
 		return
@@ -209,8 +208,8 @@ local function onReload(player: Player, tool: unknown)
 		if state.reloadToken ~= token then
 			return
 		end
-		-- Reloading is always cleared, but the ammo only comes back if the gun is still in
-		-- the hands of a living owner. Otherwise swapping away mid reload would be a free refill
+		-- Reloading is always cleared
+		-- the ammo only comes back if the gun is still held by a living owner, otherwise swapping away mid reload would be a free refill
 		if equipped.Parent == player.Character and CharacterRig.IsAlive(player.Character) then
 			equipped:SetAttribute("Ammo", config.MagSize)
 		end
@@ -225,10 +224,9 @@ local function applyDesiredAiming(player: Player)
 	end
 end
 
--- Unlike pitch, an aim toggle can't just be dropped: a lost release would leave the
--- player aiming for good. So the latest wish is stored right away and applied when the
--- limiter allows. One delayed flush at a time is enough since it applies whatever the
--- newest value is when it runs
+-- unlike pitch, an aim toggle cannot be dropped, because a lost release would leave the player aiming forever
+-- so the newest value is saved right away and applied when the limiter allows
+-- one delayed flush at a time is enough, since it applies whatever the newest value is when it runs
 local function onSetAiming(player: Player, aiming: unknown)
 	local state = getPlayerState(player)
 	state.desiredAiming = aiming == true
@@ -246,8 +244,8 @@ local function onSetAiming(player: Player, aiming: unknown)
 	end
 end
 
--- Pitch is continuous, so if it's over the rate limit I just drop it, the next sample
--- replaces it. NaN fails pitch ~= pitch, and the clamp handles inf and huge values
+-- pitch is continuous, so if it is over the rate limit it is dropped and the next sample replaces it
+-- NaN fails pitch ~= pitch, and the clamp handles inf and huge values
 local function onAimPitch(player: Player, pitch: unknown)
 	local character = player.Character
 	if not character or type(pitch) ~= "number" or pitch ~= pitch then
@@ -263,8 +261,8 @@ local function prepareTool(tool: Tool, isR15: boolean)
 	if not config then
 		return
 	end
-	-- called from several places for the same tool, so everything in here has to be safe to
-	-- repeat. WeaponScaler guards itself and Ammo is only seeded when it's nil
+	-- this is called from several places for the same tool, so it has to be safe to repeat
+	-- WeaponScaler guards itself, and Ammo is only set when it is nil
 	if isR15 then
 		WeaponScaler.Apply(tool, Settings.R15.WeaponScale, Settings.R15.EyeRelief)
 	end
@@ -286,8 +284,8 @@ local function prepareDescendant(item: Instance, isR15: boolean)
 	end
 end
 
--- Posing follows whether a tool is equipped. Aiming is reset when there isn't one so a
--- stale true can't let someone fire the moment they re-equip
+-- posing follows whether a tool is equipped
+-- Aiming is reset when there is none, so an old true cannot let someone fire the moment they equip again
 local function refreshPosing(character: Model)
 	if WeaponRegistry.GetEquipped(character) then
 		PoseReplicator.Start(character)
@@ -304,8 +302,8 @@ local function disconnectCharacter(state: PlayerState)
 	table.clear(state.characterConnections)
 end
 
--- Everything per character goes through here and every connection is put in
--- characterConnections so respawning or leaving can drop them all at once
+-- everything for a character goes through here
+-- every connection is saved in characterConnections, so respawning or leaving can drop them all at once
 local function watchCharacter(player: Player, character: Model)
 	if not character.Parent then
 		return
@@ -317,8 +315,8 @@ local function watchCharacter(player: Player, character: Model)
 		return
 	end
 	local state = getPlayerState(player)
-	-- the join path can reach here twice for the same character (CharacterAdded and the
-	-- initial spawn), disconnecting first makes the second run replace the first
+	-- a player who joins can reach this twice for the same character (CharacterAdded and the first spawn)
+	-- disconnecting first makes the second run replace the first
 	disconnectCharacter(state)
 	state.desiredAiming = false
 	local isR15 = CharacterRig.IsR15(character)
@@ -387,8 +385,8 @@ local function watchPlayer(player: Player)
 	end
 end
 
--- PlayerRemoving cleanup: connections, state and limiter entries all hold the Player
--- alive otherwise
+-- cleanup when a player leaves
+-- the connections, state and limiter entries would all keep the Player alive otherwise
 local function forgetPlayer(player: Player)
 	local state = playerStates[player]
 	if state then

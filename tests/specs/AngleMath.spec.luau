@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Pins the angle conventions the pose and camera code rely on: yaw 0 faces -Z, wrapping goes to [-pi, pi)
+    These pin down the angle rules the pose and camera code use: yaw 0 faces -Z and wrapping goes to [-pi, pi)
 ]]
 local roblox = require("@lune/roblox")
 

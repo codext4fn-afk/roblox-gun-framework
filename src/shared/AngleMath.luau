@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Small angle and number helpers shared by server and client, angles are radians
+    These are small angle and number helpers used by both the server and the client, and angles are in radians
 ]]
 
 local AngleMath = {}

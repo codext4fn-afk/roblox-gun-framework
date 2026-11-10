@@ -2,10 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Tracers, muzzle flash, impacts, bullet holes, casings and sounds
-    Everything is pooled so full auto doesn't spam Instance.new
-    Cosmetic and local only, effect parts have CanQuery off so they never block shots
-    The tracer is just visual, the hit was already resolved and the impact plays when it arrives
+    This makes the tracers, muzzle flash, impacts, bullet holes, casings and sounds
+    Everything is pooled, so full auto does not keep calling Instance.new
+    It is only visual and local, and the parts have CanQuery off so they never block a shot
+    The hit was already decided, so the tracer is just for looks and the impact plays when it arrives
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Picks the anim id: config id, per weapon draft, shared id, then shared draft
-    Cached per rig and weapon, empty results too
-    Returns "" when nothing exists and callers skip the animation
+    This picks the animation id: config id, weapon draft, shared id, then shared draft
+    The result is cached for each rig and weapon, even when it is empty
+    It returns "" when nothing exists, so callers skip the animation
 ]]
 
 local AnimationClipProvider = game:GetService("AnimationClipProvider")

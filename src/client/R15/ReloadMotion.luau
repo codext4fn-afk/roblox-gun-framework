@@ -2,10 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Procedural R15 reload, keyframes the support hand and the mag and bolt follow it
-    Keys are rebuilt every frame from the live handle so the hand follows the gun
-    One per running reload, owned by WeaponRig, and used when ReloadUsesAnimation is off
-    Finish has to put everything back since a reload can be replaced or aborted
+    This is the R15 reload done in code, the support hand follows keyframes and the mag and bolt follow the hand
+    The keys are rebuilt every frame from the live handle, so the hand stays on the gun
+    There is one per running reload, WeaponRig owns it, and it is only used when ReloadUsesAnimation is off
+    Finish has to put everything back, because a reload can be replaced or stopped
 ]]
 -- TODO(me): explain the geometry constants (GRIP_ALONG, PULL_CLEAR, LINE_UP, ROCK_ANGLE, the 0.12 bolt palm offset)
 

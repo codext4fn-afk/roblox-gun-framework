@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Client rig for R6, arms go through PoseSolverR6 and the gun stays on the RightGrip weld
+    This is the client rig for R6, the arms go through PoseSolverR6 and the gun stays on the RightGrip weld
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

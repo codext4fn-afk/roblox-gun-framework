@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Reads AimPoint, SupportGrip and the mag well off a gun model, with fallbacks if they're missing
-    Works in the Handle's space and is cached per tool, WeaponRig is the only user
+    This reads AimPoint, SupportGrip and the mag well from a gun model, and uses guesses if they are missing
+    It works in the Handle's space and is cached per tool, and WeaponRig is the only one that uses it
 ]]
 -- TODO(me): explain where SUPPORT_ALONG, SUPPORT_BELOW_BORE and the FALLBACK_EYE values come from
 

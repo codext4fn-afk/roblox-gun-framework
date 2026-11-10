@@ -2,10 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Places the gun and both arms for R15 every frame
-    Works back from the eye: sight line, offsets, handle, then IK
+    This places the gun and both arms for R15 every frame
+    It works back from the eye: sight line, offsets, handle, then IK
     The arms are solved to where the RightGrip weld wants the hand, and the weld carries the gun
-    view only exists for the local player, remote characters aim from their replicated pitch
+    Only the local player has a view, so remote characters aim from their replicated pitch
 ]]
 -- TODO(me): explain the tuning constants at the top (EYE_OFFSET, the poles, sway and bob values)
 

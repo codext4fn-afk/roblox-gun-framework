@@ -2,10 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Command bar helpers for rigging gun models
+    These are command bar helpers for rigging gun models
     require(game.ServerStorage.WeaponEditor.GunSetup).Build(workspace.MyGun)
-    Edit time only: one Handle, parts welded to it and a GunJoint on the bolt and mag parts named by the config
-    Mechanics treats the GunJoint C0 as the rest position, so the whole offset lives in C0
+    It only runs while editing, and it gives the gun one Handle, welds the parts to it, and adds a GunJoint to the bolt and mag parts named in the config
+    Mechanics treats the GunJoint C0 as the rest position, so the whole offset has to be in C0
 ]]
 -- TODO(me): explain why Scale exists here as well as WeaponScaler on the server, I can't tell if both are meant to be used
 

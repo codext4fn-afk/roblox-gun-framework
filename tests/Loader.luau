@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Loads src modules under Lune by faking script and require
-    Only the math globals exist, so modules that touch game or Instance can't load here, that's why only the pure ones have specs
+    This loads the src modules under Lune by faking script and require
+    Only the math globals exist, so a module that touches game or Instance cannot load, and that is why only the pure ones have specs
 ]]
 
 local fs = require("@lune/fs")

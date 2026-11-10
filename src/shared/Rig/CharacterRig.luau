@@ -6,8 +6,8 @@ local Types = require(script.Parent.Parent.Types)
 -- and reloading, so it's based on Humanoid.Health and not on anything the client says
 
 --[[
-    Rig type and liveness checks on a character model
-    The server uses IsAlive to gate firing and reloading, it reads Humanoid.Health and nothing the client says
+    This checks the rig type and if a character is alive
+    The server uses IsAlive to allow firing and reloading, and it reads Humanoid.Health instead of anything the client says
 ]]
 local CharacterRig = {}
 

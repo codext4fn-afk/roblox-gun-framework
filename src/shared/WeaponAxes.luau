@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Finds the handle, attachments and joints on a gun model
+    This finds the handle, attachments and joints of a gun model
     Models face different ways, so the barrel direction comes from the Muzzle attachment
-    Everything can return nil, callers have to cope
+    Anything can come back nil, so callers have to handle it
 ]]
 local AngleMath = require(script.Parent.AngleMath)
 

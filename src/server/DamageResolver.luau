@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Turns accepted pellet directions into damage
-    Every pellet is recast here and damage comes from the server's config and hit zones
-    Trusts that WeaponService already validated the shooter, tool and directions
+    This turns the accepted pellet directions into damage
+    Every pellet is cast again here, and the damage comes from the server's config and hit zones
+    It trusts that WeaponService already checked the shooter, the tool and the directions
 ]]
 
 local Players = game:GetService("Players")
@@ -23,8 +23,8 @@ type Hit = {
 	damage: number,
 }
 
--- Friendly fire is decided per victim after pellets are summed. NPCs have no Player and
--- neutral players have no team, so both count as fair targets
+-- friendly fire is decided for each victim after the pellets are added up
+-- NPCs have no Player and neutral players have no team, so both can always be hit
 local function canDamage(shooter: Player, victimModel: Model, config: Types.WeaponConfig): boolean
 	if config.FriendlyFire then
 		return true
@@ -36,9 +36,9 @@ local function canDamage(shooter: Player, victimModel: Model, config: Types.Weap
 	return victim.Team ~= shooter.Team
 end
 
--- Classic creator tag so leaderboards and kill feeds know who to credit. The old one is
--- replaced so the last shooter gets the kill. It expires after CreatorTagLifetime so old
--- credit doesn't stay on the humanoid
+-- the classic creator tag, so leaderboards and kill feeds know who to credit
+-- the old one is replaced so the last shooter gets the kill
+-- it expires after CreatorTagLifetime, so old credit does not stay on the humanoid
 local function tagCreator(humanoid: Humanoid, shooter: Player)
 	local existing = humanoid:FindFirstChild("creator")
 	if existing then
@@ -62,8 +62,8 @@ function DamageResolver.Resolve(
 	origin: Vector3,
 	directions: { Vector3 }
 ): { Vector3 }
-	-- Only the shooter's own character is excluded. Held tools and accessories have
-	-- CanQuery off (see WeaponService.prepareDescendant) so they don't block either
+	-- only the shooter's own character is excluded
+	-- held tools and accessories have CanQuery off (see WeaponService.prepareDescendant), so they do not block either
 	local params = Raycast.Excluding({ character })
 	local hitPositions = table.create(#directions)
 	-- sum pellets per humanoid so a shotgun blast lands as one hit and one creator tag
@@ -71,8 +71,8 @@ function DamageResolver.Resolve(
 
 	for _, direction in directions do
 		local result = Raycast.Cast(origin, direction, config.Range, params)
-		-- misses still get an endpoint so other clients can draw a full length tracer, and
-		-- these are the server's positions, not whatever the client claimed it hit
+		-- a miss still gets an end point, so other clients can draw a full length tracer
+		-- these are the server's positions, not what the client said it hit
 		table.insert(hitPositions, if result then result.Position else origin + direction * config.Range)
 		local part = result and result.Instance
 		if part and part:IsA("BasePart") then

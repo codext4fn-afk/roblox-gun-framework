@@ -1,8 +1,8 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Every weapon config validates, has no unknown keys and keeps its shipped numbers
-    A new config has to be added to SHIPPED, on purpose, so the numbers get a look
+    Every weapon config has to validate, have no unknown keys and keep its shipped numbers
+    A new config has to be added to SHIPPED on purpose, so someone looks at the numbers
 ]]
 local fs = require("@lune/fs")
 

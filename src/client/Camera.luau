@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Sits on top of the default camera: FOV, sensitivity, shoulder, body rotation, recoil and scope snap
-    Runs after the default camera each frame, so collisions still come from Roblox
+    This sits on top of the default camera and changes FOV, sensitivity, shoulder, body rotation, recoil and scope
+    It runs after the default camera every frame, so collisions still come from Roblox
     Render order: camera +1, AimPose +3, scope +4, WeaponController +5
 ]]
 

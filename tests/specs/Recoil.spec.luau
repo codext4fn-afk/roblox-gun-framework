@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Recoil decay and the sway spring, frame rate independence is the test that matters
+    These test the recoil decay and the sway spring, and the frame rate test is the one that matters
 ]]
 local PARAMS = { recovery = 14, sideways = 0.25, shakeRecovery = 10, shakeMax = 3 }
 

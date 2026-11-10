@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Poses armed characters on the server from the AimPitch and Aiming attributes
-    WeaponService calls Start and Stop on equip and unequip
-    AimPitch was already clamped upstream, only its type is checked here
+    This poses armed characters on the server from the AimPitch and Aiming attributes
+    WeaponService calls Start and Stop when a gun is equipped or put away
+    AimPitch was already clamped before it gets here, so only its type is checked
 ]]
 -- TODO(me): explain why the server poses characters at all when the client has AimPose, I can't tell from the code
 

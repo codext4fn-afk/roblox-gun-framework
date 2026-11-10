@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Per player minimum gap between requests of the same kind, for Reload, SetAiming and AimPitch
-    Fire doesn't go through here, ShotClock handles it
+    This sets a minimum gap between requests of the same kind for each player, like Reload, SetAiming and AimPitch
+    Fire does not go through here, since ShotClock handles it
     The caller passes os.clock() and calls Forget when a player leaves
 ]]
 

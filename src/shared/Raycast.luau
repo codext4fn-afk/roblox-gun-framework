@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Wrappers so server rays share one Exclude filter setup
-    direction has to be unit length since range does the scaling
+    These wrappers make the server rays share one Exclude filter
+    The direction has to be unit length, because the range does the scaling
 ]]
 
 local Raycast = {}

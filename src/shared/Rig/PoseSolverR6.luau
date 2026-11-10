@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Poses an R6 neck and shoulders from the pose table so the arms point where the player aims
-    Same module on server and client, JointLayer decides how it's written
-    Skips whichever joint is missing
+    This poses the R6 neck and shoulders from the pose table, so the arms point where the player aims
+    The server and the client use the same module, and JointLayer decides how it is written
+    A joint that is missing is skipped
 ]]
 local RunService = game:GetService("RunService")
 

@@ -2,9 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Every tunable number lives here
-    Server is what the server enforces, R15 is also read by WeaponScaler, the rest is client feel
-    Nothing is checked at load, a bad number shows up where it's used
+    Every number you can tune is here
+    Server is what the server enforces, and R15 is also read by WeaponScaler
+    The rest is client feel
+    Nothing is checked on load, so a bad number only shows up where it is used
 ]]
 
 export type ActionName = "Fire" | "Aim" | "Reload" | "SwitchShoulder"

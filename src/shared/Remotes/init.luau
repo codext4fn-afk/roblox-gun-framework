@@ -4,7 +4,8 @@
 --[[
     Client to server: Fire, Reload, SetAiming, AimPitch
     Server to client: ReplicateShot, ReplicateReload
-    Only collects the RemoteEvents, no logic. The client ones are untrusted, WeaponService validates them
+    This only collects the RemoteEvents and has no logic
+    The client ones are not trusted, so WeaponService checks them
 ]]
 
 -- fail loudly at startup if one is missing

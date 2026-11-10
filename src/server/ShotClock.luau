@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Fire rate limit per tool, a token bucket
-    Not a last shot check because packets arrive bunched up on a bad connection and a strict interval would drop the second shot
-    A burst a bit over 1 lets one early shot through, sustained fire is still capped at 1 per interval
+    This limits how fast a gun can fire, and it works as a token bucket
+    A simple last shot check would be unfair, because packets arrive bunched up on a bad connection and the second shot would be dropped
+    The burst is a little over 1, so one early shot is allowed, but sustained fire is still capped at 1 per interval
 ]]
 
 local ShotClock = {}

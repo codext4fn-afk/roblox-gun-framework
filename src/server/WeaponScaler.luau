@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Shrinks R6 scale gun models to fit R15 hands
-    Runs on the server so the new size replicates to everyone
-    WeaponService calls Apply once per tool, factor and eye relief come from Settings.R15
+    This shrinks R6 scale guns so they fit R15 hands
+    It runs on the server, so the new size replicates to everyone
+    WeaponService calls Apply once per tool, and the factor and eye relief come from Settings.R15
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

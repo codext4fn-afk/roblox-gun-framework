@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Spring for weapon sway, stateless: the caller keeps position and velocity
+    This is the spring for weapon sway, and it keeps no state because the caller holds the position and velocity
 ]]
 
 local Spring = {}

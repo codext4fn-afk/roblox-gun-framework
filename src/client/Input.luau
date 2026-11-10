@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Turns key, mouse, gamepad and touch input into the four gun actions
-    Bound on equip and unbound on unequip
-    Handlers only get pressed or released, they don't know which device it was
+    This turns keyboard, mouse, gamepad and touch input into the four gun actions
+    It is bound when a gun is equipped and unbound when it is put away
+    The handlers only get pressed or released, so they do not know which device was used
 ]]
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

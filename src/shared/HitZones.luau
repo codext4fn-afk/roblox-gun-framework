@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Maps the part the server's raycast hit to a damage zone and finds who owns it
+    This turns the part the server's raycast hit into a damage zone, and finds who owns it
     The client never says which zone it hit
 ]]
 local Types = require(script.Parent.Types)

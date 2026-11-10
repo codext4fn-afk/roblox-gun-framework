@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Overrides only, the rest comes from Defaults
+    This only has the overrides, and everything else comes from Defaults
     The file name is the weapon Id
 ]]
 local Types = require(script.Parent.Parent.Types)

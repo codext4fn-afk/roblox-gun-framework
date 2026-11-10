@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Spread math with a seeded generator, the area test catches the sqrt being removed from SampleCone
+    These test the spread math with a seeded generator, and the area test catches the sqrt being removed from SampleCone
 ]]
 local roblox = require("@lune/roblox")
 

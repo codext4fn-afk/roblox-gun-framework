@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Full screen scope for guns with ScopeOverlay on (TRex)
-    Swaps in at the end of the zoom and hides the gun locally, the gui is built in code
+    This is the full screen scope for guns with ScopeOverlay on, like the TRex
+    It appears at the end of the zoom and hides the gun locally, and the gui is built in code
 ]]
 
 local Players = game:GetService("Players")

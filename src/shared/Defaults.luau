@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Base values for every weapon, configs only override what they need
+    These are the base values for every weapon, and a config only overrides what it needs
     A new setting has to be added here (and in Types) before any config can use it
 ]]
 

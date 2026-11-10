@@ -2,9 +2,10 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Procedural arm motion for every armed character we can see: aim pitch, bob, sway and kick
-    Local pitch comes from the camera, everyone else uses the replicated attributes
-    Owns one AimState per character and feeds it to the ClientRig every frame, and sends the local pitch to the server
+    This moves the arms of every armed character we can see
+    It handles aim pitch, bob, sway and kick
+    The local player uses the camera pitch, everyone else uses the replicated attributes
+    It also sends the local pitch to the server, since that is where those attributes come from
 ]]
 -- TODO(me): explain how this client posing of remote characters fits with PoseReplicator on the server, both pose them
 

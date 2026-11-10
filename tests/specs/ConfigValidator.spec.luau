@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Each test breaks one config rule, these are the cases that would otherwise show up mid match
+    Each test breaks one config rule, since these are the cases that would otherwise show up in the middle of a match
 ]]
 return function(test, expect, load)
 	local ConfigMerge = load("shared/ConfigMerge")

@@ -2,8 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Spread math for the shot pattern and crosshair, the random source comes from the caller
-    The server doesn't re-roll, ShotValidator only checks the cone
+    This is the spread math for the shot pattern and the crosshair
+    The random numbers come from the caller
+    The server does not roll again, since ShotValidator only checks the cone
 ]]
 
 local Spread = {}

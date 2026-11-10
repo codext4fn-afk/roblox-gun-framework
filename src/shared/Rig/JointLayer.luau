@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Layers an offset on a Motor6D without fighting the character's animations
-    The server writes Transform, the client writes C0
-    Callers have to Clear when they stop posing or the offset stays on
+    This adds an offset on a Motor6D without fighting the character's animations
+    The server writes Transform and the client writes C0
+    Callers have to Clear when they stop posing, or the offset stays on
 ]]
 
 export type Layer = {

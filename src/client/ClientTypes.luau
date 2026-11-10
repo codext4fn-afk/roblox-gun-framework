@@ -1,9 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Client only types, no runtime code
-    Equipped is the gun in hand, AimState is the pose state AimPose owns
-    ClientRig is what R6 and R15 implement, so the controller never checks rig type
+    These are the types only the client uses, there is no runtime code
+    Equipped is the gun in hand and AimState is the pose data AimPose owns
+    ClientRig is what R6 and R15 both implement, so the controller never checks the rig type
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

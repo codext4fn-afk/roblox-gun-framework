@@ -2,8 +2,8 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Tiny assertion helper for the specs
-    toContain does a substring match on strings, which is how the validator specs match an error path
+    This is a small assertion helper for the specs
+    toContain does a substring match on strings, and that is how the validator specs find an error path
 ]]
 
 export type Expectation = {

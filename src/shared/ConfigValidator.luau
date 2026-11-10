@@ -2,9 +2,9 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Load time checks for merged weapon configs, returns every problem at once
-    The server trusts configs, so a bad FireInterval or a fractional Pellets would break mid match
-    Failing at load just means the weapon doesn't register
+    This checks every merged weapon config when it loads, and returns all the problems at once
+    The server trusts configs, so a bad FireInterval or a fractional Pellets would break in the middle of a match
+    If a config fails, the weapon just does not register
 ]]
 
 local ConfigValidator = {}

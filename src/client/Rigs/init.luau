@@ -1,7 +1,7 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 --[[
-    Picks the ClientRig for a character, nil without a Humanoid
+    This picks the ClientRig for a character, and gives nil if there is no Humanoid
     The rest of the client only uses the ClientRig interface
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

@@ -2,7 +2,7 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    Used by WeaponRegistry: Merge lays a weapon's overrides over Defaults, UnknownKeys warns about typos
+    WeaponRegistry uses this: Merge puts a weapon's overrides over Defaults, and UnknownKeys warns about typos
 ]]
 
 local ConfigMerge = {}
