@@ -1,7 +1,9 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Full screen scope for guns with ScopeOverlay on (TRex)
+-- Full screen scope for guns with ScopeOverlay on (TRex). WeaponController calls Update every
+-- frame with the camera's zoom alpha, and the overlay swaps in right at the end of the zoom.
+-- It also hides the gun locally while the overlay is up. The gui is built in code, not from assets.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,7 +17,9 @@ local LENS_SIZE = 0.9
 local LINE_THICKNESS = 2
 local CENTER_GAP = 0.04
 local TINT = Color3.new(0, 0, 0)
-local STROKE_THICKNESS = 4000 -- huge stroke around a round frame works as the black mask
+-- a huge stroke around a round (corner radius 50%) frame works as the black mask, so the
+-- lens is a hole in it and no image asset is needed
+local STROKE_THICKNESS = 4000
 local DISPLAY_ORDER = 5
 
 local gui: ScreenGui? = nil
@@ -100,7 +104,8 @@ function ScopeOverlay.Update(tool: Tool, config: Types.WeaponConfig, zoomAlpha: 
 		hiddenTool = tool
 	end
 	screen.Enabled = true
-	-- FirstPersonView shows the tool again every frame so keep hiding it
+	-- FirstPersonView sets the tool visible again every frame so I have to keep hiding it here.
+	-- WeaponController calls this after FirstPersonView.Update in the same frame, so this wins
 	setToolHidden(tool, true)
 end
 
