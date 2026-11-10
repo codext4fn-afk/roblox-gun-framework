@@ -1,7 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
--- Drives the GunHUD gui, the layout itself is in assets/GunHUD.model.json
+-- Drives the GunHUD gui, the layout itself is in assets/GunHUD.model.json. It only sets what
+-- it's told (ammo text, crosshair gap, hitmarker, vignette), WeaponController decides when.
+-- I expect the gui to have the exact child names bind() waits for, and it waits forever if one
+-- is missing. The HUD is looked up lazily on first Show so it doesn't need to exist at require.
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -44,7 +47,9 @@ type Elements = {
 
 local elements: Elements? = nil
 local reloadAnimating = false
-local reloadToken = 0 -- so an old dots loop stops when a new reload starts
+-- Without this, stopping and starting a reload within one DOT_INTERVAL would leave the old
+-- loop alive when it wakes up, and two loops would fight over the label
+local reloadToken = 0
 
 local function guiChildren(parent: Instance): { GuiObject }
 	local found = {}
@@ -96,6 +101,7 @@ function Hud.Show(weaponName: string)
 	elements = hud
 	hud.nameLabel.Text = string.upper(weaponName)
 	hud.gui.Enabled = true
+	-- the HUD draws its own crosshair, so the system cursor is hidden until Hide puts it back
 	UserInputService.MouseIconEnabled = false
 end
 
