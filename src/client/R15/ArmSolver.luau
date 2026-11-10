@@ -2,6 +2,11 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 -- Two bone IK for R15 arms, writes the shoulder, elbow and wrist C0s so the hand lands on target
+-- Only C0 is written, Transform is left to the Animator, and every joint's original C0 is
+-- remembered so Reset can restore it. WeaponRig is the caller: it gives a hand target and a pole
+-- (the direction the elbow should point), and weight says how much IK vs the original pose. An
+-- animation that wants the arms back gets weight 0 and the joints blend to their rest C0.
+-- TODO(me): explain MAX_PROTRACTION and FOREARM_TWIST, I don't know how those were picked
 
 export type Side = "Right" | "Left"
 
@@ -52,6 +57,8 @@ local function basisFrom(primary: Vector3, secondary: Vector3): CFrame?
 	return CFrame.fromMatrix(Vector3.zero, x, y, x:Cross(y))
 end
 
+-- Lengths and bone directions are measured from the rig's own joints, so it works for
+-- differently proportioned R15 avatars. nil if the arm is missing a joint
 local function buildChain(character: Model, side: Side): Chain?
 	local parts, names = CHAIN_PARTS[side], JOINT_NAMES[side]
 	local shoulder = findMotor(character, parts.upper, names.shoulder)
@@ -73,6 +80,7 @@ local function buildChain(character: Model, side: Side): Chain?
 	}
 end
 
+-- chains are cached per character, and rebuilt if the cached shoulder motor lost its Parent
 local function getChain(character: Model, side: Side): Chain?
 	local chains = chainCache[character]
 	if not chains then
@@ -92,7 +100,9 @@ local function partFrame(pivot: Vector3, rotation: CFrame, childOffset: Vector3)
 	return CFrame.new(pivot) * rotation * CFrame.new(-childOffset)
 end
 
--- divide out Transform so IK wins over the arm anim
+-- Divide out Transform so IK wins over the arm anim: Roblox applies C0 * Transform * C1^-1, so
+-- without the inverse here the animation would be added on top of the solved pose. weight
+-- below 1 blends from the original C0 toward the solved one
 local function writeJoint(joint: Joint, part0: CFrame, part1: CFrame, weight: number)
 	local motor = joint.motor
 	local solved = part0:Inverse() * part1 * motor.C1 * motor.Transform:Inverse()
@@ -118,7 +128,8 @@ function ArmSolver.Solve(
 
 	local shoulderPivot = space * shoulder.base.Position
 	local toWrist = handTarget * wrist.motor.C1.Position - shoulderPivot
-	-- out of reach, slide the shoulder forward first
+	-- out of reach, slide the shoulder forward first, up to MAX_PROTRACTION, and only after
+	-- that does the arm get clamped to REACH_LIMIT
 	local excess = toWrist.Magnitude - (upperLength + lowerLength) * REACH_LIMIT
 	if excess > 0 then
 		local shift = toWrist.Unit * math.min(excess, MAX_PROTRACTION)
@@ -133,11 +144,13 @@ function ArmSolver.Solve(
 	)
 	local wristPivot = shoulderPivot + axis * reach
 
-	-- law of cosines
+	-- law of cosines: `along` is how far down the shoulder to wrist line the elbow sits, `height`
+	-- how far it's pushed off that line
 	local along = (upperLength * upperLength - lowerLength * lowerLength + reach * reach) / (2 * reach)
 	local height = math.sqrt(math.max(upperLength * upperLength - along * along, 0))
 	local toPole = pole - shoulderPivot
-	-- elbow points at the pole
+	-- elbow points at the pole. If the pole is on the shoulder to wrist line there's no side to
+	-- pick, so it falls back to pointing down
 	local bend = toPole - axis * toPole:Dot(axis)
 	if bend.Magnitude < 1e-4 then
 		bend = -space.UpVector
@@ -168,6 +181,8 @@ function ArmSolver.Solve(
 	writeJoint(wrist, lowerArm, hand, weight)
 end
 
+-- gives WeaponRig the shoulder rest position and max reach, so it can place poles and pull the
+-- gun in for short arms without doing its own measuring
 function ArmSolver.GetShoulder(character: Model, side: Side): (Vector3?, number)
 	local chain = getChain(character, side)
 	if not chain then
