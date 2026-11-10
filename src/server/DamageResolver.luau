@@ -1,5 +1,12 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
+
+-- Turns accepted pellet directions into damage. The client only ever picks directions,
+-- so every pellet is recast here and damage comes from the server's own config and hit
+-- zones. It trusts that WeaponService already validated the shooter, the tool and the
+-- directions (finite, unit length, inside the spread cone). It expects config.Damage to
+-- have an entry for every HitZone.
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -16,7 +23,8 @@ type Hit = {
 	damage: number,
 }
 
--- NPCs and neutral players can always be hit
+-- Friendly fire is decided per victim after pellets are summed. NPCs have no Player and
+-- neutral players have no team, so both count as fair targets
 local function canDamage(shooter: Player, victimModel: Model, config: Types.WeaponConfig): boolean
 	if config.FriendlyFire then
 		return true
@@ -28,7 +36,9 @@ local function canDamage(shooter: Player, victimModel: Model, config: Types.Weap
 	return victim.Team ~= shooter.Team
 end
 
--- old school creator tag for leaderboards and kill feeds
+-- Classic creator tag so leaderboards and kill feeds know who to credit. The old one is
+-- replaced so the last shooter gets the kill. It expires after CreatorTagLifetime so old
+-- credit doesn't stay on the humanoid
 local function tagCreator(humanoid: Humanoid, shooter: Player)
 	local existing = humanoid:FindFirstChild("creator")
 	if existing then
@@ -52,17 +62,21 @@ function DamageResolver.Resolve(
 	origin: Vector3,
 	directions: { Vector3 }
 ): { Vector3 }
-	-- recast every pellet here, the client only gets to pick directions
+	-- Only the shooter's own character is excluded. Held tools and accessories have
+	-- CanQuery off (see WeaponService.prepareDescendant) so they don't block either
 	local params = Raycast.Excluding({ character })
 	local hitPositions = table.create(#directions)
-	-- sum pellets per humanoid so a shotgun blast lands as one hit
+	-- sum pellets per humanoid so a shotgun blast lands as one hit and one creator tag
 	local hits: { [Humanoid]: Hit } = {}
 
 	for _, direction in directions do
 		local result = Raycast.Cast(origin, direction, config.Range, params)
+		-- misses still get an endpoint so other clients can draw a full length tracer, and
+		-- these are the server's positions, not whatever the client claimed it hit
 		table.insert(hitPositions, if result then result.Position else origin + direction * config.Range)
 		local part = result and result.Instance
 		if part and part:IsA("BasePart") then
+			-- TODO(me): explain. A dead body still stops the pellet here (no cast through it), not sure if that's on purpose
 			local humanoid, model = HitZones.GetLivingHumanoid(part)
 			if humanoid and model then
 				local hit = hits[humanoid] or { model = model, damage = 0 }
