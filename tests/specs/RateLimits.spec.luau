@@ -1,6 +1,10 @@
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
+-- The server side rate limits. ShotClock is the fire rate cap (and what stops a fast autofire
+-- exploit), so there are tests in both directions: sustained fire can't beat the configured rate,
+-- and an honest shooter at exactly that rate is never refused. RequestLimiter covers the cheap
+-- remotes.
 return function(test, expect, load)
 	local RequestLimiter = load("server/RequestLimiter")
 	local ShotClock = load("server/ShotClock")
@@ -9,7 +13,8 @@ return function(test, expect, load)
 		expect(ShotClock.new(0.1, 1.15):TryConsume(0)).toBeTruthy()
 	end)
 
-	-- 1.15 burst refills to 1 after 0.085s
+	-- after the first shot the bucket holds 0.15, so it needs 0.85 of an interval (0.085s here)
+	-- to get back to a whole shot. That's where the two timings below come from
 	test("a second shot inside the jitter window is rejected", function()
 		local clock = ShotClock.new(0.1, 1.15)
 		clock:TryConsume(0)
