@@ -2,10 +2,11 @@
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
 --[[
-    This is the server side of the gun system, the client predicts and this script decides
-    It controls ammo, reload state, Aiming and AimPitch, the setup of each character and the four client remotes
-    The only things taken from the client are the tool and the pellet directions, and both get checked
-    Replicated state: Tool.Ammo, Tool.Reloading, Character.Aiming, Character.AimPitch
+    WeaponService handles four client requests: Fire, Reload, SetAiming, and AimPitch
+    The client predicts local effects. The server checks the equipped tool and submitted
+    shot geometry (origin, aim direction, and pellet directions) before resolving hits
+    Tool attributes expose Ammo and Reloading. Character attributes expose Aiming and AimPitch.
+    Start() connects the remote handlers and prepares current and future player characters
 ]]
 
 local Players = game:GetService("Players")
@@ -31,10 +32,7 @@ local ServerSettings = Settings.Server
 
 type ToolState = {
 	clock: ShotClock.ShotClock,
-	-- this goes up on every reload and is checked again when the timer ends
-	-- that way a timer from an older reload does nothing
-	-- right now only onReload changes it, and Reloading already blocks a second reload, so it never differs
-	-- it is here so a future cancel (unequip, death) only has to bump it to stop the refill
+	-- Identifies the reload that scheduled a delayed refill. Only onReload advances it today.
 	reloadToken: number,
 }
 
@@ -77,7 +75,7 @@ end
 
 -- the tool comes from the client, so it has to be checked
 -- it must be a real configured Tool inside this player's own living character
--- Tool.Parent == character means it is equipped, so a tool in the backpack or in someone else's hands is refused
+-- Tool.Parent == character means it is equipped, so a tool in the backpack or in someone else hands is refused
 local function getEquippedGun(player: Player, tool: unknown): (Model?, Tool?, Types.WeaponConfig?)
 	local config = WeaponRegistry.GetConfig(tool)
 	local character = player.Character
@@ -131,10 +129,8 @@ local function isAiming(player: Player, character: Model): boolean
 	return character:GetAttribute("Aiming") == true or getPlayerState(player).desiredAiming
 end
 
--- the order matters here
--- cheap checks go first, then the raycast for line of sight
--- ShotClock goes last, because a request that gets refused anyway should not use up burst credit
--- ammo only changes after everything passed, and Fire has no limiter, ShotClock is the limit
+-- Validate the request and origin before consuming fire-rate credit. Once the clock accepts
+-- the shot, spend one round even if every pellet is later rejected by the spread check.
 local function onFire(player: Player, tool: unknown, origin: unknown, aimDirection: unknown, directions: unknown)
 	local character, equipped, config = getEquippedGun(player, tool)
 	if not (character and equipped and config) or not isAiming(player, character) then
@@ -153,7 +149,8 @@ local function onFire(player: Player, tool: unknown, origin: unknown, aimDirecti
 		return
 	end
 	local head = getHead(character)
-	-- TODO(me): explain why MaxOriginOffset is 6 studs, don't know how that number was picked
+	-- The head anchors the distance check. The following raycast checks the space between
+	-- the head and the reported origin, even when the two positions are close together.
 	if not head or not ShotValidator.OriginWithinReach(shotOrigin, head.Position, ServerSettings.MaxOriginOffset) then
 		return
 	end
@@ -172,10 +169,17 @@ local function onFire(player: Player, tool: unknown, origin: unknown, aimDirecti
 		aim,
 		config.HipSpread + ServerSettings.SpreadTolerance
 	)
+	-- Separate these timings so a playtest can show how cost changes with pellet count
+	-- (hit resolution) and player count (finding recipients and sending effects).
+	debug.profilebegin("WeaponService.ResolveHits")
 	local hitPositions = DamageResolver.Resolve(player, character, config, shotOrigin, accepted)
+	debug.profileend()
+
+	debug.profilebegin("WeaponService.ReplicateShot")
 	for _, other in getNearbyPlayers(player, shotOrigin) do
 		Remotes.ReplicateShot:FireClient(other, equipped, hitPositions)
 	end
+	debug.profileend()
 end
 
 -- the server decides when a reload finishes, and the client animation is only for looks
@@ -208,8 +212,8 @@ local function onReload(player: Player, tool: unknown)
 		if state.reloadToken ~= token then
 			return
 		end
-		-- Reloading is always cleared
-		-- the ammo only comes back if the gun is still held by a living owner, otherwise swapping away mid reload would be a free refill
+		-- Check ownership and life at completion. A tool in the backpack at this point
+		-- receives no ammo. Either way, this reload releases its Reloading flag.
 		if equipped.Parent == player.Character and CharacterRig.IsAlive(player.Character) then
 			equipped:SetAttribute("Ammo", config.MagSize)
 		end
@@ -236,7 +240,7 @@ local function onSetAiming(player: Player, aiming: unknown)
 		state.aimFlushPending = true
 		task.delay(limiter:Interval("SetAiming"), function()
 			state.aimFlushPending = false
-			-- the player may have left (or been reset) while this was waiting
+			-- Leaving removes this state. Only a callback for the current player state may apply it.
 			if playerStates[player] == state then
 				applyDesiredAiming(player)
 			end
@@ -245,7 +249,7 @@ local function onSetAiming(player: Player, aiming: unknown)
 end
 
 -- pitch is continuous, so if it is over the rate limit it is dropped and the next sample replaces it
--- NaN fails pitch ~= pitch, and the clamp handles inf and huge values
+-- NaN is unequal to itself, so the guard discards it before clamping the pitch.
 local function onAimPitch(player: Player, pitch: unknown)
 	local character = player.Character
 	if not character or type(pitch) ~= "number" or pitch ~= pitch then
@@ -284,8 +288,8 @@ local function prepareDescendant(item: Instance, isR15: boolean)
 	end
 end
 
--- posing follows whether a tool is equipped
--- Aiming is reset when there is none, so an old true cannot let someone fire the moment they equip again
+-- Start pose replication for an equipped configured tool. When none is equipped,
+-- clear the character’s replicated Aiming attribute and stop the pose updates.
 local function refreshPosing(character: Model)
 	if WeaponRegistry.GetEquipped(character) then
 		PoseReplicator.Start(character)
@@ -369,6 +373,7 @@ local function watchCharacter(player: Player, character: Model)
 	refreshPosing(character)
 end
 
+-- Subscribe to future spawns and also prepare a character that already exists when setup runs.
 local function watchPlayer(player: Player)
 	player.CharacterAdded:Connect(function(character)
 		watchCharacter(player, character)
@@ -396,6 +401,7 @@ local function forgetPlayer(player: Player)
 	limiter:Forget(player)
 end
 
+-- Call once from server startup. Each call connects another set of event handlers.
 function WeaponService.Start()
 	Remotes.Fire.OnServerEvent:Connect(onFire)
 	Remotes.Reload.OnServerEvent:Connect(onReload)
