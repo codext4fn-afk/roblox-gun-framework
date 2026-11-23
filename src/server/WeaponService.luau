@@ -1,3 +1,5 @@
+-- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX / Discord: njf7). All rights reserved. Not licensed for reuse. Connected Discord-GitHub.
+
 --!strict
 -- Copyright (c) 2026 Fahd (Roblox: XXmello_iceXX). All rights reserved. Not licensed for reuse.
 
